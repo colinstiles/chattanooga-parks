@@ -190,57 +190,77 @@
             // Add default base map to the map
             osmStreet.addTo(map);
 
-            // --- Placeholder for your GeoJSON data ---
-            // You will replace these with your actual GeoJSON data or fetch them from URLs.
+            // --- Function to style parks ---
+            function styleParks(feature) {
+                return {
+                    fillColor: '#8BC34A', // Greenish color
+                    weight: 2,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.7
+                };
+            }
 
-            // Example GeoJSON for a park (replace with your actual park data)
-            const parksGeoJSON = {
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "name": "Coolidge Park",
-                            "description": "A popular park with a carousel, fountain, and river access on the North Shore.",
-                            "type": "Park"
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [
-                                [
-                                    [-85.3110, 35.0600],
-                                    [-85.3090, 35.0600],
-                                    [-85.3090, 35.0580],
-                                    [-85.3110, 35.0580],
-                                    [-85.3110, 35.0600]
-                                ]
-                            ]
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "name": "Renaissance Park",
-                            "description": "An urban wetland park with walking trails and scenic views.",
-                            "type": "Park"
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [
-                                [
-                                    [-85.3115, 35.0610],
-                                    [-85.3100, 35.0610],
-                                    [-85.3100, 35.0595],
-                                    [-85.3115, 35.0595],
-                                    [-85.3115, 35.0610]
-                                ]
-                            ]
-                        }
+            // --- Function to style trails ---
+            function styleTrails(feature) {
+                return {
+                    color: '#2196F3', // Blue color
+                    weight: 4,
+                    opacity: 0.8
+                };
+            }
+
+            // --- Function to bind popups ---
+            function onEachFeature(feature, layer) {
+                if (feature.properties && feature.properties.name) {
+                    let popupContent = `<div class="font-bold text-lg mb-1">${feature.properties.name}</div>`;
+                    if (feature.properties.description) {
+                        popupContent += `<div class="text-sm text-gray-700">${feature.properties.description}</div>`;
                     }
-                ]
-            };
+                    if (feature.properties.type) {
+                        popupContent += `<div class="text-xs text-gray-500 mt-1">Type: ${feature.properties.type}</div>`;
+                    }
+                    layer.bindPopup(popupContent, {
+                        closeButton: false, // More modern look
+                        className: 'rounded-lg shadow-md' // Tailwind-like styling for popup
+                    });
+                }
+            }
 
-            // Example GeoJSON for a trail (replace with your actual trail data)
+            // --- GeoJSON Layers ---
+            let parksLayer;
+            let trailsLayer;
+
+            // Load Parks GeoJSON data from file
+            showMessage('Loading parks data...', 'loading');
+            fetch('chatt_parks.geojson')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    parksLayer = L.geoJSON(data, {
+                        style: styleParks,
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
+                    showMessage('Parks data loaded successfully.', 'info');
+                    // Fit map bounds to the loaded parks data
+                    if (parksLayer.getBounds().isValid()) {
+                        map.fitBounds(parksLayer.getBounds());
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading parks GeoJSON:', error);
+                    showMessage('Failed to load parks data. Please check "chatt_parks.geojson".', 'error');
+                })
+                .finally(() => {
+                    setTimeout(hideMessage, 3000); // Hide message after 3 seconds
+                });
+
+            // Example GeoJSON for a trail (replace with your actual trail data or load from file)
             const trailsGeoJSON = {
                 "type": "FeatureCollection",
                 "features": [
@@ -280,59 +300,11 @@
                 ]
             };
 
-            // Function to style parks
-            function styleParks(feature) {
-                return {
-                    fillColor: '#8BC34A', // Greenish color
-                    weight: 2,
-                    opacity: 1,
-                    color: 'white',
-                    dashArray: '3',
-                    fillOpacity: 0.7
-                };
-            }
-
-            // Function to style trails
-            function styleTrails(feature) {
-                return {
-                    color: '#2196F3', // Blue color
-                    weight: 4,
-                    opacity: 0.8
-                };
-            }
-
-            // Function to bind popups
-            function onEachFeature(feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    let popupContent = `<div class="font-bold text-lg mb-1">${feature.properties.name}</div>`;
-                    if (feature.properties.description) {
-                        popupContent += `<div class="text-sm text-gray-700">${feature.properties.description}</div>`;
-                    }
-                    if (feature.properties.type) {
-                        popupContent += `<div class="text-xs text-gray-500 mt-1">Type: ${feature.properties.type}</div>`;
-                    }
-                    layer.bindPopup(popupContent, {
-                        closeButton: false, // More modern look
-                        className: 'rounded-lg shadow-md' // Tailwind-like styling for popup
-                    });
-                }
-            }
-
-            // Add Parks GeoJSON layer to the map
-            const parksLayer = L.geoJSON(parksGeoJSON, {
-                style: styleParks,
-                onEachFeature: onEachFeature
-            }); // Do not add to map yet, let layer control handle it
-
-            // Add Trails GeoJSON layer to the map
-            const trailsLayer = L.geoJSON(trailsGeoJSON, {
+            // Add Trails GeoJSON layer to the map (using placeholder for now)
+            trailsLayer = L.geoJSON(trailsGeoJSON, {
                 style: styleTrails,
                 onEachFeature: onEachFeature
-            }); // Do not add to map yet, let layer control handle it
-
-            // Add layers to map initially (optional, can be controlled by layer control)
-            parksLayer.addTo(map);
-            trailsLayer.addTo(map);
+            }).addTo(map);
 
 
             // --- Layer Control ---
@@ -343,12 +315,23 @@
                 "Hybrid (ESRI)": esriHybrid
             };
 
-            const overlayMaps = {
+            // Define overlayMaps after layers are potentially loaded
+            // This will be updated once the fetch for parksLayer completes
+            let overlayMaps = {
                 "Parks": parksLayer,
                 "Trails": trailsLayer
             };
 
-            L.control.layers(baseMaps, overlayMaps).addTo(map);
+            // Function to update layer control after async data load
+            function updateLayerControl() {
+                if (map.hasLayer(L.control.layers(baseMaps, overlayMaps))) {
+                    map.removeControl(L.control.layers(baseMaps, overlayMaps));
+                }
+                L.control.layers(baseMaps, overlayMaps).addTo(map);
+            }
+
+            // Initial layer control setup
+            updateLayerControl();
 
             // --- Reset View Functionality ---
             const resetViewButton = document.getElementById('resetViewButton');
@@ -358,35 +341,8 @@
                 setTimeout(hideMessage, 3000); // Hide message after 3 seconds
             });
 
-            // --- Example of loading external GeoJSON with error handling (commented out for now) ---
-            /*
-            async function loadExternalGeoJSON(url, styleFunction, onEachFunction, layerName) {
-                showMessage(`Loading ${layerName} data...`, 'loading');
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    const geoJsonLayer = L.geoJSON(data, {
-                        style: styleFunction,
-                        onEachFeature: onEachFunction
-                    }).addTo(map);
-                    overlayMaps[layerName] = geoJsonLayer; // Add to layer control
-                    L.control.layers(baseMaps, overlayMaps).addTo(map); // Refresh layer control
-                    showMessage(`${layerName} data loaded successfully.`, 'info');
-                } catch (error) {
-                    console.error(`Could not load ${layerName} data:`, error);
-                    showMessage(`Failed to load ${layerName} data. Please check the URL.`, 'error');
-                } finally {
-                    setTimeout(hideMessage, 3000); // Hide message after 3 seconds
-                }
-            }
-
-            // To use: uncomment and provide actual URLs
-            // loadExternalGeoJSON('path/to/your/parks.geojson', styleParks, onEachFeature, 'External Parks');
-            // loadExternalGeoJSON('path/to/your/trails.geojson', styleTrails, onEachFeature, 'External Trails');
-            */
+            // Listen for the 'dataloaded' custom event to update layer control
+            map.on('dataloaded', updateLayerControl);
         };
     </script>
 </body>
