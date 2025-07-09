@@ -3,347 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chattanooga Parks & Trails Map</title>
-    <!-- Leaflet CSS -->
+    <title>Chattanooga Parks & Trails Explorer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIINfBGazA6vvYVhpx/ne0iXUPrPf/ykZg0="
-          crossorigin=""/>
-    <!-- Tailwind CSS for basic styling -->
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20n5H6J42PzX5n68+e6Nwe+rK6Jt1qFwW+U5N3fA8Q4="
+     crossorigin=""></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Custom CSS for overall layout and map appearance */
         body {
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #f3f4f6; /* Light gray background */
         }
-        .container {
-            flex-grow: 1; /* Allow container to grow and take available space */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem; /* Default padding */
-        }
-        @media (min-width: 640px) { /* Small screens and up */
-            .container {
-                padding: 1.5rem;
-            }
-        }
-        @media (min-width: 1024px) { /* Large screens and up */
-            .container {
-                padding: 2rem;
-            }
-        }
-
         #map {
-            height: 70vh; /* Make the map take up most of the viewport height */
-            width: 100%;
-            max-width: 1200px; /* Max width for larger screens */
-            border-radius: 0.75rem; /* More rounded corners */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Deeper shadow */
-            margin-bottom: 1.5rem;
-            overflow: hidden; /* Ensures rounded corners clip map content */
-        }
-        .leaflet-container {
-            font-family: 'Inter', sans-serif; /* Ensure Leaflet uses Inter font */
-        }
-        .info-box {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-            width: 100%;
-            max-width: 1200px;
-            text-align: center;
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1; /* Ensure map is behind control panel for overlay effects */
         }
         .control-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000; /* Higher z-index to be on top of the map */
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 90vw; /* Adjust for smaller screens */
+            max-height: 90vh; /* Adjust for smaller screens */
+            overflow-y: auto; /* Enable scrolling for many layers */
+        }
+        .control-panel label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
         }
         .control-button {
-            background-color: #4f46e5; /* Indigo 600 */
+            background-color: #2563EB; /* Blue-700 */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem; /* Equivalent to rounded-md */
+            text-align: center;
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: none;
+            transition: background-color 0.2s;
         }
         .control-button:hover {
-            background-color: #4338ca; /* Indigo 700 */
-            transform: translateY(-1px);
+            background-color: #1D4ED8; /* Blue-800 */
         }
-        .control-button:active {
-            background-color: #3730a3; /* Indigo 800 */
-            transform: translateY(0);
-        }
-
-        /* Styling for loading/error messages */
+        /* Styles for the message box */
         #message-box {
-            background-color: #fff;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            text-align: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 1001; /* Above control panel */
             display: none; /* Hidden by default */
-        }
-        #message-box.loading {
-            color: #1d4ed8; /* Blue 700 */
-        }
-        #message-box.error {
-            color: #dc2626; /* Red 600 */
+            font-size: 1.1rem;
+            text-align: center;
         }
     </style>
 </head>
-<body>
-    <div class="container mx-auto">
-        <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 text-center leading-tight">
-            Chattanooga <span class="text-indigo-600">Parks & Trails</span> Explorer
-        </h1>
+<body class="overflow-hidden">
+    <div id="map"></div>
 
-        <div id="map"></div>
-
-        <div class="control-panel">
-            <button id="resetViewButton" class="control-button">Reset View</button>
-        </div>
-
-        <div id="message-box" class="w-full max-w-4xl"></div>
-
-        <div class="info-box w-full max-w-4xl">
-            <h2 class="text-2xl font-bold text-gray-800 mb-3">About This Map</h2>
-            <p class="text-gray-700 leading-relaxed">
-                Welcome to the interactive map of Chattanooga's beautiful parks and scenic trails.
-                Use the layer control in the top-right corner to switch between different base maps (Street, Satellite, Terrain, Hybrid)
-                and to toggle the visibility of the Parks and Trails layers. Click on any park or trail feature to view detailed information.
-            </p>
-            <p class="text-gray-700 leading-relaxed mt-3">
-                This map is designed to be fully mobile-responsive, providing a seamless experience across all devices.
-                To add your own data, replace the placeholder GeoJSON in the script section or load external GeoJSON files.
-            </p>
-        </div>
+    <div id="control-panel" class="control-panel">
+        <h2 class="text-lg font-bold mb-2">Map Layers</h2>
+        <button id="reset-view-button" class="control-button mt-2">Reset View</button>
     </div>
 
-    <!-- Leaflet JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/4K9+sGFu4jDF/Aeky9lb="
-            crossorigin=""></script>
+    <div id="message-box"></div>
 
     <script>
-        // Define initial map view coordinates and zoom level
-        const initialMapCenter = [35.0456, -85.3097]; // Centered on Chattanooga, TN
-        const initialZoomLevel = 12;
+        const map = L.map('map').setView([35.0456, -85.3097], 12); // Centered on Chattanooga
 
-        // Function to display messages (loading, error, info)
-        function showMessage(message, type = 'info') {
-            const messageBox = document.getElementById('message-box');
-            messageBox.textContent = message;
-            messageBox.className = `w-full max-w-4xl p-4 rounded-lg shadow-sm mt-4 text-center ${type === 'loading' ? 'bg-blue-100 text-blue-700' : type === 'error' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`;
-            messageBox.style.display = 'block';
-        }
+        // Base Layers
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
 
-        function hideMessage() {
-            document.getElementById('message-box').style.display = 'none';
-        }
+        const esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
 
-        // Ensure Leaflet is loaded before initializing the map
-        window.onload = function() {
-            // Initialize the map
-            const map = L.map('map').setView(initialMapCenter, initialZoomLevel);
+        const esriHybrid = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '' // Attribution handled by esriImagery
+        });
+        const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {});
+        // Add labels on top of imagery for hybrid view
+        const hybridLayer = L.layerGroup([esriHybrid, esriLabels]);
 
-            // --- Base Map Layers ---
-            // OpenStreetMap (Street)
-            const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            });
+        // Add OSM by default
+        osm.addTo(map);
 
-            // ESRI World Imagery (Satellite)
-            const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-            });
+        // Overlay Layers
+        let parksLayer = null; // Will be populated dynamically
+        let trailsLayer = null;
 
-            // ESRI World Terrain (Terrain)
-            const esriTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS'
-            });
-
-            // ESRI World Hybrid (Satellite with Labels)
-            const esriHybrid = L.layerGroup([
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-                }),
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: '', // Attribution handled by imagery layer
-                    pane: 'shadowPane' // Ensure labels are above imagery
-                })
-            ]);
-
-            // Add default base map to the map
-            osmStreet.addTo(map);
-
-            // --- Function to style parks ---
-            function styleParks(feature) {
-                return {
-                    fillColor: '#8BC34A', // Greenish color
-                    weight: 2,
-                    opacity: 1,
-                    color: 'white',
-                    dashArray: '3',
-                    fillOpacity: 0.7
-                };
+        const showMessage = (msg, type = 'info') => {
+            const msgBox = document.getElementById('message-box');
+            msgBox.textContent = msg;
+            msgBox.className = ''; // Clear existing classes
+            msgBox.classList.add('fade-in');
+            if (type === 'error') {
+                msgBox.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'; // Red-600
+            } else {
+                msgBox.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
             }
-
-            // --- Function to style trails ---
-            function styleTrails(feature) {
-                return {
-                    color: '#2196F3', // Blue color
-                    weight: 4,
-                    opacity: 0.8
-                };
-            }
-
-            // --- Function to bind popups ---
-            function onEachFeature(feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    let popupContent = `<div class="font-bold text-lg mb-1">${feature.properties.name}</div>`;
-                    if (feature.properties.description) {
-                        popupContent += `<div class="text-sm text-gray-700">${feature.properties.description}</div>`;
-                    }
-                    if (feature.properties.type) {
-                        popupContent += `<div class="text-xs text-gray-500 mt-1">Type: ${feature.properties.type}</div>`;
-                    }
-                    layer.bindPopup(popupContent, {
-                        closeButton: false, // More modern look
-                        className: 'rounded-lg shadow-md' // Tailwind-like styling for popup
-                    });
-                }
-            }
-
-            // --- GeoJSON Layers ---
-            let parksLayer;
-            let trailsLayer;
-
-            // Load Parks GeoJSON data from file
-            showMessage('Loading parks data...', 'loading');
-            fetch('chatt_parks.geojson')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    parksLayer = L.geoJSON(data, {
-                        style: styleParks,
-                        onEachFeature: onEachFeature
-                    }).addTo(map);
-                    showMessage('Parks data loaded successfully.', 'info');
-                    // Fit map bounds to the loaded parks data
-                    if (parksLayer.getBounds().isValid()) {
-                        map.fitBounds(parksLayer.getBounds());
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading parks GeoJSON:', error);
-                    showMessage('Failed to load parks data. Please check "chatt_parks.geojson".', 'error');
-                })
-                .finally(() => {
-                    setTimeout(hideMessage, 3000); // Hide message after 3 seconds
-                });
-
-            // Example GeoJSON for a trail (replace with your actual trail data or load from file)
-            const trailsGeoJSON = {
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "name": "Chattanooga Riverwalk (Downtown Section)",
-                            "description": "A paved trail along the Tennessee River, great for walking and biking.",
-                            "type": "Trail"
-                        },
-                        "geometry": {
-                            "type": "LineString",
-                            "coordinates": [
-                                [-85.3080, 35.0570],
-                                [-85.3060, 35.0550],
-                                [-85.3040, 35.0530],
-                                [-85.3020, 35.0510]
-                            ]
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "name": "Stringer's Ridge Trail",
-                            "description": "A popular mountain biking and hiking trail system.",
-                            "type": "Trail"
-                        },
-                        "geometry": {
-                            "type": "LineString",
-                            "coordinates": [
-                                [-85.2850, 35.0750],
-                                [-85.2830, 35.0730],
-                                [-85.2810, 35.0710]
-                            ]
-                        }
-                    }
-                ]
-            };
-
-            // Add Trails GeoJSON layer to the map (using placeholder for now)
-            trailsLayer = L.geoJSON(trailsGeoJSON, {
-                style: styleTrails,
-                onEachFeature: onEachFeature
-            }).addTo(map);
-
-
-            // --- Layer Control ---
-            const baseMaps = {
-                "Street (OSM)": osmStreet,
-                "Satellite (ESRI)": esriSatellite,
-                "Terrain (ESRI)": esriTerrain,
-                "Hybrid (ESRI)": esriHybrid
-            };
-
-            // Define overlayMaps after layers are potentially loaded
-            // This will be updated once the fetch for parksLayer completes
-            let overlayMaps = {
-                "Parks": parksLayer,
-                "Trails": trailsLayer
-            };
-
-            // Function to update layer control after async data load
-            function updateLayerControl() {
-                if (map.hasLayer(L.control.layers(baseMaps, overlayMaps))) {
-                    map.removeControl(L.control.layers(baseMaps, overlayMaps));
-                }
-                L.control.layers(baseMaps, overlayMaps).addTo(map);
-            }
-
-            // Initial layer control setup
-            updateLayerControl();
-
-            // --- Reset View Functionality ---
-            const resetViewButton = document.getElementById('resetViewButton');
-            resetViewButton.addEventListener('click', () => {
-                map.setView(initialMapCenter, initialZoomLevel);
-                showMessage('Map view reset to Chattanooga center.', 'info');
-                setTimeout(hideMessage, 3000); // Hide message after 3 seconds
-            });
-
-            // Listen for the 'dataloaded' custom event to update layer control
-            map.on('dataloaded', updateLayerControl);
+            msgBox.style.display = 'block';
+            setTimeout(hideMessage, 3000); // Hide after 3 seconds
         };
+
+        const hideMessage = () => {
+            const msgBox = document.getElementById('message-box');
+            msgBox.classList.add('fade-out');
+            msgBox.addEventListener('animationend', () => {
+                msgBox.style.display = 'none';
+                msgBox.classList.remove('fade-out');
+            }, { once: true });
+        };
+
+
+        // Function to style parks
+        function styleParks(feature) {
+            return {
+                fillColor: '#4CAF50', // Green-500
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7
+            };
+        }
+
+        // Function to style trails
+        function styleTrails(feature) {
+            return {
+                color: '#FFD700', // Gold
+                weight: 3,
+                opacity: 0.9
+            };
+        }
+
+        // Fetch Chattanooga Parks GeoJSON
+        showMessage('Loading parks data...');
+        fetch('chatt_parks.geojson')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                parksLayer = L.geoJson(data, {
+                    style: styleParks,
+                    onEachFeature: (feature, layer) => {
+                        if (feature.properties && feature.properties.name) {
+                            layer.bindPopup(`<b>${feature.properties.name}</b>`);
+                        }
+                    }
+                }).addTo(map); // Add to map immediately
+
+                showMessage('Parks data loaded!', 'info');
+                map.fire('dataloaded'); // Dispatch custom event after parksLayer is added
+            })
+            .catch(error => {
+                console.error('Error loading parks GeoJSON:', error);
+                showMessage(`Failed to load parks data: ${error.message}`, 'error');
+            });
+
+        // Hardcoded Trails GeoJSON (Consider loading from an external file for larger datasets)
+        const trailsGeoJSON = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Riverwalk Trail" },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [-85.3097, 35.0500],
+                            [-85.3050, 35.0520],
+                            [-85.2950, 35.0500]
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Walnut Street Bridge" },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [-85.3080, 35.0590],
+                            [-85.3060, 35.0600]
+                        ]
+                    }
+                }
+            ]
+        };
+
+        trailsLayer = L.geoJson(trailsGeoJSON, {
+            style: styleTrails,
+            onEachFeature: (feature, layer) => {
+                if (feature.properties && feature.properties.name) {
+                    layer.bindPopup(`<b>${feature.properties.name}</b>`);
+                }
+            }
+        }).addTo(map); // Add to map immediately
+
+
+        // Layer Control
+        const baseLayers = {
+            "OpenStreetMap": osm,
+            "ESRI World Imagery": esriImagery,
+            "ESRI Hybrid": hybridLayer
+        };
+
+        const overlayLayers = {}; // Will be populated dynamically
+
+        let layerControl = null; // To hold the L.control.layers instance
+
+        const updateLayerControl = () => {
+            // Remove existing control if it exists
+            if (layerControl) {
+                map.removeControl(layerControl);
+            }
+
+            // Populate overlayLayers with available layers
+            if (parksLayer) {
+                overlayLayers["Chattanooga Parks"] = parksLayer;
+            }
+            if (trailsLayer) {
+                overlayLayers["Chattanooga Trails"] = trailsLayer;
+            }
+
+            // Create new control
+            layerControl = L.control.layers(baseLayers, overlayLayers).addTo(map);
+        };
+
+        // Initial update of layer control
+        updateLayerControl();
+
+        // Listen for custom event to update layer control after async data loads
+        map.on('dataloaded', updateLayerControl);
+
+
+        // Reset View Button
+        document.getElementById('reset-view-button').addEventListener('click', () => {
+            map.setView([35.0456, -85.3097], 12);
+            showMessage('View reset!', 'info');
+        });
     </script>
 </body>
 </html>
