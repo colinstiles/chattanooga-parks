@@ -1,31 +1,393 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Interactive Map</title>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Chattanooga Parks & Trails Map</title>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIINfQRevh3bqQ7R9rZCOWznV/E2TXLzTvY="
-        crossorigin=""/>
-
-    <link rel="stylesheet" href="style.css" />
-
+          integrity="sha256-p4NxAoJBhIINfBGazA6vvYVhpx/ne0iXUPrPf/ykZg0="
+          crossorigin=""/>
+    <!-- Tailwind CSS for basic styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom CSS for overall layout and map appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .container {
+            flex-grow: 1; /* Allow container to grow and take available space */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem; /* Default padding */
+        }
+        @media (min-width: 640px) { /* Small screens and up */
+            .container {
+                padding: 1.5rem;
+            }
+        }
+        @media (min-width: 1024px) { /* Large screens and up */
+            .container {
+                padding: 2rem;
+            }
+        }
+
         #map {
-            height: 600px; /* Set a height for your map */
+            height: 70vh; /* Make the map take up most of the viewport height */
             width: 100%;
+            max-width: 1200px; /* Max width for larger screens */
+            border-radius: 0.75rem; /* More rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Deeper shadow */
+            margin-bottom: 1.5rem;
+            overflow: hidden; /* Ensures rounded corners clip map content */
+        }
+        .leaflet-container {
+            font-family: 'Inter', sans-serif; /* Ensure Leaflet uses Inter font */
+        }
+        .info-box {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .control-button {
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .control-button:hover {
+            background-color: #4338ca; /* Indigo 700 */
+            transform: translateY(-1px);
+        }
+        .control-button:active {
+            background-color: #3730a3; /* Indigo 800 */
+            transform: translateY(0);
+        }
+
+        /* Styling for loading/error messages */
+        #message-box {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        #message-box.loading {
+            color: #1d4ed8; /* Blue 700 */
+        }
+        #message-box.error {
+            color: #dc2626; /* Red 600 */
         }
     </style>
 </head>
 <body>
-    <h1>My First Interactive Map</h1>
-    <div id="map"></div>
+    <div class="container mx-auto">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 text-center leading-tight">
+            Chattanooga <span class="text-indigo-600">Parks & Trails</span> Explorer
+        </h1>
 
+        <div id="map"></div>
+
+        <div class="control-panel">
+            <button id="resetViewButton" class="control-button">Reset View</button>
+        </div>
+
+        <div id="message-box" class="w-full max-w-4xl"></div>
+
+        <div class="info-box w-full max-w-4xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-3">About This Map</h2>
+            <p class="text-gray-700 leading-relaxed">
+                Welcome to the interactive map of Chattanooga's beautiful parks and scenic trails.
+                Use the layer control in the top-right corner to switch between different base maps (Street, Satellite, Terrain, Hybrid)
+                and to toggle the visibility of the Parks and Trails layers. Click on any park or trail feature to view detailed information.
+            </p>
+            <p class="text-gray-700 leading-relaxed mt-3">
+                This map is designed to be fully mobile-responsive, providing a seamless experience across all devices.
+                To add your own data, replace the placeholder GeoJSON in the script section or load external GeoJSON files.
+            </p>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nEFhZz9/YpS/P3G5Wq820s3D6f7Ew2W2d0D0/L9A="
-        crossorigin=""></script>
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/4K9+sGFu4jDF/Aeky9lb="
+            crossorigin=""></script>
 
-    <script src="script.js"></script>
+    <script>
+        // Define initial map view coordinates and zoom level
+        const initialMapCenter = [35.0456, -85.3097]; // Centered on Chattanooga, TN
+        const initialZoomLevel = 12;
+
+        // Function to display messages (loading, error, info)
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            messageBox.className = `w-full max-w-4xl p-4 rounded-lg shadow-sm mt-4 text-center ${type === 'loading' ? 'bg-blue-100 text-blue-700' : type === 'error' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`;
+            messageBox.style.display = 'block';
+        }
+
+        function hideMessage() {
+            document.getElementById('message-box').style.display = 'none';
+        }
+
+        // Ensure Leaflet is loaded before initializing the map
+        window.onload = function() {
+            // Initialize the map
+            const map = L.map('map').setView(initialMapCenter, initialZoomLevel);
+
+            // --- Base Map Layers ---
+            // OpenStreetMap (Street)
+            const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+
+            // ESRI World Imagery (Satellite)
+            const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            });
+
+            // ESRI World Terrain (Terrain)
+            const esriTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS'
+            });
+
+            // ESRI World Hybrid (Satellite with Labels)
+            const esriHybrid = L.layerGroup([
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                }),
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '', // Attribution handled by imagery layer
+                    pane: 'shadowPane' // Ensure labels are above imagery
+                })
+            ]);
+
+            // Add default base map to the map
+            osmStreet.addTo(map);
+
+            // --- Placeholder for your GeoJSON data ---
+            // You will replace these with your actual GeoJSON data or fetch them from URLs.
+
+            // Example GeoJSON for a park (replace with your actual park data)
+            const parksGeoJSON = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Coolidge Park",
+                            "description": "A popular park with a carousel, fountain, and river access on the North Shore.",
+                            "type": "Park"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [
+                                [
+                                    [-85.3110, 35.0600],
+                                    [-85.3090, 35.0600],
+                                    [-85.3090, 35.0580],
+                                    [-85.3110, 35.0580],
+                                    [-85.3110, 35.0600]
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Renaissance Park",
+                            "description": "An urban wetland park with walking trails and scenic views.",
+                            "type": "Park"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [
+                                [
+                                    [-85.3115, 35.0610],
+                                    [-85.3100, 35.0610],
+                                    [-85.3100, 35.0595],
+                                    [-85.3115, 35.0595],
+                                    [-85.3115, 35.0610]
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            };
+
+            // Example GeoJSON for a trail (replace with your actual trail data)
+            const trailsGeoJSON = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Chattanooga Riverwalk (Downtown Section)",
+                            "description": "A paved trail along the Tennessee River, great for walking and biking.",
+                            "type": "Trail"
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [-85.3080, 35.0570],
+                                [-85.3060, 35.0550],
+                                [-85.3040, 35.0530],
+                                [-85.3020, 35.0510]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Stringer's Ridge Trail",
+                            "description": "A popular mountain biking and hiking trail system.",
+                            "type": "Trail"
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [-85.2850, 35.0750],
+                                [-85.2830, 35.0730],
+                                [-85.2810, 35.0710]
+                            ]
+                        }
+                    }
+                ]
+            };
+
+            // Function to style parks
+            function styleParks(feature) {
+                return {
+                    fillColor: '#8BC34A', // Greenish color
+                    weight: 2,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.7
+                };
+            }
+
+            // Function to style trails
+            function styleTrails(feature) {
+                return {
+                    color: '#2196F3', // Blue color
+                    weight: 4,
+                    opacity: 0.8
+                };
+            }
+
+            // Function to bind popups
+            function onEachFeature(feature, layer) {
+                if (feature.properties && feature.properties.name) {
+                    let popupContent = `<div class="font-bold text-lg mb-1">${feature.properties.name}</div>`;
+                    if (feature.properties.description) {
+                        popupContent += `<div class="text-sm text-gray-700">${feature.properties.description}</div>`;
+                    }
+                    if (feature.properties.type) {
+                        popupContent += `<div class="text-xs text-gray-500 mt-1">Type: ${feature.properties.type}</div>`;
+                    }
+                    layer.bindPopup(popupContent, {
+                        closeButton: false, // More modern look
+                        className: 'rounded-lg shadow-md' // Tailwind-like styling for popup
+                    });
+                }
+            }
+
+            // Add Parks GeoJSON layer to the map
+            const parksLayer = L.geoJSON(parksGeoJSON, {
+                style: styleParks,
+                onEachFeature: onEachFeature
+            }); // Do not add to map yet, let layer control handle it
+
+            // Add Trails GeoJSON layer to the map
+            const trailsLayer = L.geoJSON(trailsGeoJSON, {
+                style: styleTrails,
+                onEachFeature: onEachFeature
+            }); // Do not add to map yet, let layer control handle it
+
+            // Add layers to map initially (optional, can be controlled by layer control)
+            parksLayer.addTo(map);
+            trailsLayer.addTo(map);
+
+
+            // --- Layer Control ---
+            const baseMaps = {
+                "Street (OSM)": osmStreet,
+                "Satellite (ESRI)": esriSatellite,
+                "Terrain (ESRI)": esriTerrain,
+                "Hybrid (ESRI)": esriHybrid
+            };
+
+            const overlayMaps = {
+                "Parks": parksLayer,
+                "Trails": trailsLayer
+            };
+
+            L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+            // --- Reset View Functionality ---
+            const resetViewButton = document.getElementById('resetViewButton');
+            resetViewButton.addEventListener('click', () => {
+                map.setView(initialMapCenter, initialZoomLevel);
+                showMessage('Map view reset to Chattanooga center.', 'info');
+                setTimeout(hideMessage, 3000); // Hide message after 3 seconds
+            });
+
+            // --- Example of loading external GeoJSON with error handling (commented out for now) ---
+            /*
+            async function loadExternalGeoJSON(url, styleFunction, onEachFunction, layerName) {
+                showMessage(`Loading ${layerName} data...`, 'loading');
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const geoJsonLayer = L.geoJSON(data, {
+                        style: styleFunction,
+                        onEachFeature: onEachFunction
+                    }).addTo(map);
+                    overlayMaps[layerName] = geoJsonLayer; // Add to layer control
+                    L.control.layers(baseMaps, overlayMaps).addTo(map); // Refresh layer control
+                    showMessage(`${layerName} data loaded successfully.`, 'info');
+                } catch (error) {
+                    console.error(`Could not load ${layerName} data:`, error);
+                    showMessage(`Failed to load ${layerName} data. Please check the URL.`, 'error');
+                } finally {
+                    setTimeout(hideMessage, 3000); // Hide message after 3 seconds
+                }
+            }
+
+            // To use: uncomment and provide actual URLs
+            // loadExternalGeoJSON('path/to/your/parks.geojson', styleParks, onEachFeature, 'External Parks');
+            // loadExternalGeoJSON('path/to/your/trails.geojson', styleTrails, onEachFeature, 'External Trails');
+            */
+        };
+    </script>
 </body>
 </html>
