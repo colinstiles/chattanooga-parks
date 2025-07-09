@@ -1,268 +1,670 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chattanooga Parks & Trails Explorer</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20n5H6J42PzX5n68+e6Nwe+rK6Jt1qFwW+U5N3fA8Q4="
-     crossorigin=""></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Chattanooga Parks & Trails</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    
+    <!-- Custom CSS -->
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-        }
-        #map {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
-            width: 100vw;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1; /* Ensure map is behind control panel for overlay effects */
+            overflow: hidden;
         }
-        .control-panel {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000; /* Higher z-index to be on top of the map */
-            background: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        .app-container {
+            position: relative;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            max-width: 90vw; /* Adjust for smaller screens */
-            max-height: 90vh; /* Adjust for smaller screens */
-            overflow-y: auto; /* Enable scrolling for many layers */
         }
-        .control-panel label {
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 250px;
+            max-width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .control-panel.collapsed {
+            transform: translateX(calc(100% - 50px));
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .control-section h3 {
+            font-size: 14px;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .layer-control {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
         }
-        .control-button {
-            background-color: #2563EB; /* Blue-700 */
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem; /* Equivalent to rounded-md */
-            text-align: center;
+
+        .layer-control:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .layer-control input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .layer-control label {
+            font-size: 13px;
+            color: #2c3e50;
             cursor: pointer;
-            transition: background-color 0.2s;
+            flex: 1;
         }
-        .control-button:hover {
-            background-color: #1D4ED8; /* Blue-800 */
+
+        .layer-count {
+            font-size: 11px;
+            color: #7f8c8d;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 10px;
         }
-        /* Styles for the message box */
-        #message-box {
-            position: fixed;
+
+        .basemap-control {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .basemap-control input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .basemap-control label {
+            font-size: 13px;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .loading {
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #e74c3c;
             color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            z-index: 1001; /* Above control panel */
-            display: none; /* Hidden by default */
-            font-size: 1.1rem;
-            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .control-panel {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                min-width: auto;
+            }
+            
+            .control-panel.collapsed {
+                transform: translateY(calc(-100% + 50px));
+            }
+        }
+
+        /* Custom Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .popup-content {
+            padding: 5px;
+        }
+
+        .popup-content h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .popup-content p {
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #34495e;
+        }
+
+        .popup-content .feature-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .popup-content .feature-type.park {
+            background: #27ae60;
+            color: white;
+        }
+
+        .popup-content .feature-type.trail {
+            background: #f39c12;
+            color: white;
         }
     </style>
 </head>
-<body class="overflow-hidden">
-    <div id="map"></div>
-
-    <div id="control-panel" class="control-panel">
-        <h2 class="text-lg font-bold mb-2">Map Layers</h2>
-        <button id="reset-view-button" class="control-button mt-2">Reset View</button>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🌲 Chattanooga Parks & Trails Explorer</h1>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <div class="control-panel" id="controlPanel">
+                <div class="panel-header">
+                    <div class="panel-title">Map Controls</div>
+                    <button class="toggle-btn" id="togglePanel">Hide</button>
+                </div>
+                
+                <div class="error-message" id="errorMessage"></div>
+                
+                <div class="control-section">
+                    <h3>Base Map</h3>
+                    <div class="basemap-control">
+                        <input type="radio" id="street" name="basemap" value="street" checked>
+                        <label for="street">Street Map</label>
+                    </div>
+                    <div class="basemap-control">
+                        <input type="radio" id="satellite" name="basemap" value="satellite">
+                        <label for="satellite">Satellite</label>
+                    </div>
+                    <div class="basemap-control">
+                        <input type="radio" id="terrain" name="basemap" value="terrain">
+                        <label for="terrain">Terrain</label>
+                    </div>
+                    <div class="basemap-control">
+                        <input type="radio" id="hybrid" name="basemap" value="hybrid">
+                        <label for="hybrid">Hybrid</label>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Layers</h3>
+                    <div class="layer-control">
+                        <input type="checkbox" id="parksLayer" checked>
+                        <label for="parksLayer">Parks</label>
+                        <span class="layer-count" id="parksCount">0</span>
+                    </div>
+                    <div class="layer-control">
+                        <input type="checkbox" id="trailsLayer" checked>
+                        <label for="trailsLayer">Trails</label>
+                        <span class="layer-count" id="trailsCount">0</span>
+                    </div>
+                </div>
+                
+                <button class="reset-btn" id="resetView">Reset View</button>
+            </div>
+            
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <div>Loading map data...</div>
+            </div>
+        </div>
     </div>
 
-    <div id="message-box"></div>
-
+    <!-- Leaflet JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
     <script>
-        const map = L.map('map').setView([35.0456, -85.3097], 12); // Centered on Chattanooga
-
-        // Base Layers
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        });
-
-        const esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-        });
-
-        const esriHybrid = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '' // Attribution handled by esriImagery
-        });
-        const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {});
-        // Add labels on top of imagery for hybrid view
-        const hybridLayer = L.layerGroup([esriHybrid, esriLabels]);
-
-        // Add OSM by default
-        osm.addTo(map);
-
-        // Overlay Layers
-        let parksLayer = null; // Will be populated dynamically
-        let trailsLayer = null;
-
-        const showMessage = (msg, type = 'info') => {
-            const msgBox = document.getElementById('message-box');
-            msgBox.textContent = msg;
-            msgBox.className = ''; // Clear existing classes
-            msgBox.classList.add('fade-in');
-            if (type === 'error') {
-                msgBox.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'; // Red-600
-            } else {
-                msgBox.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        class ChattanoogaMap {
+            constructor() {
+                this.map = null;
+                this.parksLayer = null;
+                this.trailsLayer = null;
+                this.baseMaps = {};
+                this.currentBasemap = 'street';
+                this.defaultCenter = [35.0456, -85.3097]; // Chattanooga coordinates
+                this.defaultZoom = 11;
+                
+                this.init();
             }
-            msgBox.style.display = 'block';
-            setTimeout(hideMessage, 3000); // Hide after 3 seconds
-        };
-
-        const hideMessage = () => {
-            const msgBox = document.getElementById('message-box');
-            msgBox.classList.add('fade-out');
-            msgBox.addEventListener('animationend', () => {
-                msgBox.style.display = 'none';
-                msgBox.classList.remove('fade-out');
-            }, { once: true });
-        };
-
-
-        // Function to style parks
-        function styleParks(feature) {
-            return {
-                fillColor: '#4CAF50', // Green-500
-                weight: 2,
-                opacity: 1,
-                color: 'white',
-                dashArray: '3',
-                fillOpacity: 0.7
-            };
-        }
-
-        // Function to style trails
-        function styleTrails(feature) {
-            return {
-                color: '#FFD700', // Gold
-                weight: 3,
-                opacity: 0.9
-            };
-        }
-
-        // Fetch Chattanooga Parks GeoJSON
-        showMessage('Loading parks data...');
-        fetch('chatt_parks.geojson')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            
+            init() {
+                this.initMap();
+                this.initBaseMaps();
+                this.initControls();
+                this.loadData();
+            }
+            
+            initMap() {
+                this.map = L.map('map', {
+                    center: this.defaultCenter,
+                    zoom: this.defaultZoom,
+                    zoomControl: false
+                });
+                
+                // Add custom zoom control
+                L.control.zoom({
+                    position: 'bottomright'
+                }).addTo(this.map);
+            }
+            
+            initBaseMaps() {
+                this.baseMaps = {
+                    street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }),
+                    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri'
+                    }),
+                    terrain: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri'
+                    }),
+                    hybrid: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri'
+                    })
+                };
+                
+                this.baseMaps[this.currentBasemap].addTo(this.map);
+            }
+            
+            initControls() {
+                // Panel toggle
+                document.getElementById('togglePanel').addEventListener('click', () => {
+                    const panel = document.getElementById('controlPanel');
+                    const btn = document.getElementById('togglePanel');
+                    
+                    if (panel.classList.contains('collapsed')) {
+                        panel.classList.remove('collapsed');
+                        btn.textContent = 'Hide';
+                    } else {
+                        panel.classList.add('collapsed');
+                        btn.textContent = 'Show';
+                    }
+                });
+                
+                // Basemap controls
+                document.querySelectorAll('input[name="basemap"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.switchBasemap(e.target.value);
+                    });
+                });
+                
+                // Layer controls
+                document.getElementById('parksLayer').addEventListener('change', (e) => {
+                    this.toggleLayer('parks', e.target.checked);
+                });
+                
+                document.getElementById('trailsLayer').addEventListener('change', (e) => {
+                    this.toggleLayer('trails', e.target.checked);
+                });
+                
+                // Reset view
+                document.getElementById('resetView').addEventListener('click', () => {
+                    this.resetView();
+                });
+            }
+            
+            switchBasemap(basemapType) {
+                this.map.removeLayer(this.baseMaps[this.currentBasemap]);
+                this.currentBasemap = basemapType;
+                this.baseMaps[this.currentBasemap].addTo(this.map);
+                
+                // Special handling for hybrid (satellite with labels)
+                if (basemapType === 'hybrid') {
+                    const labels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri'
+                    });
+                    labels.addTo(this.map);
                 }
-                return response.json();
-            })
-            .then(data => {
-                parksLayer = L.geoJson(data, {
-                    style: styleParks,
-                    onEachFeature: (feature, layer) => {
-                        if (feature.properties && feature.properties.name) {
-                            layer.bindPopup(`<b>${feature.properties.name}</b>`);
+            }
+            
+            toggleLayer(layerType, visible) {
+                const layer = layerType === 'parks' ? this.parksLayer : this.trailsLayer;
+                
+                if (visible && layer) {
+                    this.map.addLayer(layer);
+                } else if (!visible && layer) {
+                    this.map.removeLayer(layer);
+                }
+            }
+            
+            resetView() {
+                this.map.setView(this.defaultCenter, this.defaultZoom);
+            }
+            
+            showLoading() {
+                document.getElementById('loadingIndicator').classList.add('active');
+            }
+            
+            hideLoading() {
+                document.getElementById('loadingIndicator').classList.remove('active');
+            }
+            
+            showError(message) {
+                const errorEl = document.getElementById('errorMessage');
+                errorEl.textContent = message;
+                errorEl.classList.add('active');
+                setTimeout(() => errorEl.classList.remove('active'), 5000);
+            }
+            
+            loadData() {
+                this.showLoading();
+                
+                // Load sample data - replace these with your actual GeoJSON files
+                this.loadSampleData();
+            }
+            
+            loadSampleData() {
+                // Sample parks data
+                const sampleParks = {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Coolidge Park",
+                                "type": "Park",
+                                "description": "Beautiful riverside park with playground and carousel",
+                                "area": "15 acres",
+                                "amenities": "Playground, Carousel, Walking paths"
+                            },
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [-85.3089, 35.0581]
+                            }
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Renaissance Park",
+                                "type": "Park",
+                                "description": "Large park with sports facilities and lake",
+                                "area": "120 acres",
+                                "amenities": "Sports fields, Lake, Trails"
+                            },
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [-85.2234, 35.0297]
+                            }
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Greenway Farm Park",
+                                "type": "Park",
+                                "description": "Community park with farm theme",
+                                "area": "25 acres",
+                                "amenities": "Farm animals, Trails, Picnic areas"
+                            },
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [-85.1876, 35.0123]
+                            }
                         }
-                    }
-                }).addTo(map); // Add to map immediately
-
-                showMessage('Parks data loaded!', 'info');
-                map.fire('dataloaded'); // Dispatch custom event after parksLayer is added
-            })
-            .catch(error => {
-                console.error('Error loading parks GeoJSON:', error);
-                showMessage(`Failed to load parks data: ${error.message}`, 'error');
-            });
-
-        // Hardcoded Trails GeoJSON (Consider loading from an external file for larger datasets)
-        const trailsGeoJSON = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": { "name": "Riverwalk Trail" },
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-85.3097, 35.0500],
-                            [-85.3050, 35.0520],
-                            [-85.2950, 35.0500]
-                        ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": { "name": "Walnut Street Bridge" },
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-85.3080, 35.0590],
-                            [-85.3060, 35.0600]
-                        ]
-                    }
+                    ]
+                };
+                
+                // Sample trails data
+                const sampleTrails = {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Tennessee Riverwalk",
+                                "type": "Trail",
+                                "description": "Scenic walking trail along the Tennessee River",
+                                "length": "13 miles",
+                                "difficulty": "Easy",
+                                "surface": "Paved"
+                            },
+                            "geometry": {
+                                "type": "LineString",
+                                "coordinates": [
+                                    [-85.3089, 35.0581],
+                                    [-85.3000, 35.0500],
+                                    [-85.2900, 35.0450],
+                                    [-85.2800, 35.0400]
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Stringers Ridge Trail",
+                                "type": "Trail",
+                                "description": "Mountain biking and hiking trail with city views",
+                                "length": "3.2 miles",
+                                "difficulty": "Moderate",
+                                "surface": "Natural"
+                            },
+                            "geometry": {
+                                "type": "LineString",
+                                "coordinates": [
+                                    [-85.2934, 35.0789],
+                                    [-85.2900, 35.0820],
+                                    [-85.2870, 35.0850],
+                                    [-85.2840, 35.0880]
+                                ]
+                            }
+                        }
+                    ]
+                };
+                
+                try {
+                    this.loadParks(sampleParks);
+                    this.loadTrails(sampleTrails);
+                    this.hideLoading();
+                } catch (error) {
+                    this.hideLoading();
+                    this.showError('Error loading map data');
+                    console.error('Error loading data:', error);
                 }
-            ]
-        };
-
-        trailsLayer = L.geoJson(trailsGeoJSON, {
-            style: styleTrails,
-            onEachFeature: (feature, layer) => {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup(`<b>${feature.properties.name}</b>`);
-                }
             }
-        }).addTo(map); // Add to map immediately
-
-
-        // Layer Control
-        const baseLayers = {
-            "OpenStreetMap": osm,
-            "ESRI World Imagery": esriImagery,
-            "ESRI Hybrid": hybridLayer
-        };
-
-        const overlayLayers = {}; // Will be populated dynamically
-
-        let layerControl = null; // To hold the L.control.layers instance
-
-        const updateLayerControl = () => {
-            // Remove existing control if it exists
-            if (layerControl) {
-                map.removeControl(layerControl);
+            
+            loadParks(geojsonData) {
+                this.parksLayer = L.geoJSON(geojsonData, {
+                    pointToLayer: (feature, latlng) => {
+                        return L.circleMarker(latlng, {
+                            radius: 8,
+                            fillColor: "#27ae60",
+                            color: "#fff",
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const popupContent = `
+                            <div class="popup-content">
+                                <div class="feature-type park">PARK</div>
+                                <h3>${props.name}</h3>
+                                <p><strong>Description:</strong> ${props.description}</p>
+                                <p><strong>Area:</strong> ${props.area}</p>
+                                <p><strong>Amenities:</strong> ${props.amenities}</p>
+                            </div>
+                        `;
+                        layer.bindPopup(popupContent);
+                    }
+                }).addTo(this.map);
+                
+                document.getElementById('parksCount').textContent = geojsonData.features.length;
             }
-
-            // Populate overlayLayers with available layers
-            if (parksLayer) {
-                overlayLayers["Chattanooga Parks"] = parksLayer;
+            
+            loadTrails(geojsonData) {
+                this.trailsLayer = L.geoJSON(geojsonData, {
+                    style: {
+                        color: "#f39c12",
+                        weight: 4,
+                        opacity: 0.8
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const popupContent = `
+                            <div class="popup-content">
+                                <div class="feature-type trail">TRAIL</div>
+                                <h3>${props.name}</h3>
+                                <p><strong>Description:</strong> ${props.description}</p>
+                                <p><strong>Length:</strong> ${props.length}</p>
+                                <p><strong>Difficulty:</strong> ${props.difficulty}</p>
+                                <p><strong>Surface:</strong> ${props.surface}</p>
+                            </div>
+                        `;
+                        layer.bindPopup(popupContent);
+                    }
+                }).addTo(this.map);
+                
+                document.getElementById('trailsCount').textContent = geojsonData.features.length;
             }
-            if (trailsLayer) {
-                overlayLayers["Chattanooga Trails"] = trailsLayer;
-            }
-
-            // Create new control
-            layerControl = L.control.layers(baseLayers, overlayLayers).addTo(map);
-        };
-
-        // Initial update of layer control
-        updateLayerControl();
-
-        // Listen for custom event to update layer control after async data loads
-        map.on('dataloaded', updateLayerControl);
-
-
-        // Reset View Button
-        document.getElementById('reset-view-button').addEventListener('click', () => {
-            map.setView([35.0456, -85.3097], 12);
-            showMessage('View reset!', 'info');
+        }
+        
+        // Initialize the map when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChattanoogaMap();
         });
     </script>
 </body>
