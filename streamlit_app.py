@@ -79,8 +79,8 @@ if show_trails and not trails_gdf.empty:
             'weight': 4, 
             'opacity': 0.8
         },
-        tooltip=folium.GeoJsonTooltip(fields=['name', 'description', 'length', 'difficulty', 'surface'],
-                                      aliases=['Name:', 'Description:', 'Length:', 'Difficulty:', 'Surface:'],
+        tooltip=folium.GeoJsonTooltip(fields=['NAME', 'LENGTH', 'SURFACE_TYPE', 'ADA', 'EXT_LINK'],
+                                      aliases=['Trail Name:', 'Length (mi):', 'Surface Type:', 'ADA Accessible:', 'External Link:'],
                                       localize=True)
     ).add_to(m)
 
@@ -98,8 +98,8 @@ if show_parks and not parks_gdf.empty:
             opacity=1,
             fill_opacity=0.8
         ),
-        tooltip=folium.GeoJsonTooltip(fields=['name', 'description', 'acres', 'amenities'],
-                                      aliases=['Name:', 'Description:', 'Acres:', 'Amenities:'],
+        tooltip=folium.GeoJsonTooltip(fields=['NAME', 'DESCRIPTION', 'AMENITIES', 'ACRES'],
+                                      aliases=['Name:', 'Description:', 'Amenities:', 'Acres:'],
                                       localize=True)
     ).add_to(m)
 
