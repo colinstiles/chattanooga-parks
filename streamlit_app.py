@@ -79,7 +79,7 @@ if show_trails and not trails_gdf.empty:
             'weight': 4, 
             'opacity': 0.8
         },
-        tooltip=folium.GeoJsonTooltip(fields=['NAME', 'LENGTH', 'SURFACE_TYPE', 'ADA', 'EXT_LINK'],
+        tooltip=folium.GeoJsonTooltip(fields=['TRAIL_NAME', 'LENGTH', 'SURFACE_TYPE', 'ADA', 'EXT_LINK'],
                                       aliases=['Trail Name:', 'Length (mi):', 'Surface Type:', 'ADA Accessible:', 'External Link:'],
                                       localize=True)
     ).add_to(m)
