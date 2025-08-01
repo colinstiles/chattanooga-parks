@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # --- Title and Header ---
-st.title("Chattanooga Parks & Trails Explorer")
+st.title("🌲 Chattanooga Parks & Trails Explorer")
 st.markdown("Use the controls below to explore parks and trails in Chattanooga.")
 
 # --- Data Loading ---
@@ -33,26 +33,26 @@ if parks_gdf is None or trails_gdf is None:
     st.stop()
 
 # --- Sidebar for Controls ---
-st.sidebar.header("Map Controls")
-
-# Basemap selection
-basemap_choice = st.sidebar.radio(
-    "Select Base Map",
-    ("OpenStreetMap", "Stamen Terrain", "Esri Satellite")
-)
-
-# Layer toggles
-st.sidebar.subheader("Layers")
-show_parks = st.sidebar.checkbox("Show Parks", value=True)
-show_trails = st.sidebar.checkbox("Show Trails", value=True)
-
-# Display feature counts
-st.sidebar.info(f"Parks: {len(parks_gdf)} | Trails: {len(trails_gdf)}")
-
-# Reset button
-if st.sidebar.button("Reset View"):
-    st.experimental_rerun()
-
+with st.sidebar:
+    st.header("Map Controls")
+    
+    # Basemap selection
+    basemap_choice = st.radio(
+        "Select Base Map",
+        ("OpenStreetMap", "Stamen Terrain", "Esri Satellite")
+    )
+    
+    # Layer toggles
+    st.subheader("Layers")
+    show_parks = st.checkbox("Show Parks", value=True)
+    show_trails = st.checkbox("Show Trails", value=True)
+    
+    # Display feature counts
+    st.info(f"Parks: {len(parks_gdf)} | Trails: {len(trails_gdf)}")
+    
+    # Reset button
+    if st.button("Reset View"):
+        st.experimental_rerun()
 
 # --- Map Initialization ---
 # Create a folium map object centered on Chattanooga
@@ -67,6 +67,37 @@ else: # Default to OpenStreetMap
     folium.TileLayer('OpenStreetMap', attr='Map data © OpenStreetMap contributors', name='OpenStreetMap').add_to(m)
 
 
+# --- Define Functions for Custom Popups ---
+
+def parks_popup(feature):
+    """Generates an HTML popup for park features."""
+    props = feature['properties']
+    html = f"""
+    <div class="popup-content">
+        <div class="feature-type park">PARK</div>
+        <h3>{props.get('Name', 'No Name')}</h3>
+        <p><strong>Description:</strong> {props.get('Description', 'N/A')}</p>
+        <p><strong>Acres:</strong> {props.get('Acres', 'N/A')}</p>
+        <p><strong>Amenities:</strong> {props.get('Amenities', 'N/A')}</p>
+    </div>
+    """
+    return folium.Popup(html)
+
+def trails_popup(feature):
+    """Generates an HTML popup for trail features."""
+    props = feature['properties']
+    html = f"""
+    <div class="popup-content">
+        <div class="feature-type trail">TRAIL</div>
+        <h3>{props.get('name', 'No Name')}</h3>
+        <p><strong>Description:</strong> {props.get('Description', 'N/A')}</p>
+        <p><strong>Length:</strong> {props.get('Length (mi)', 'N/A')}</p>
+        <p><strong>Difficulty:</strong> {props.get('Difficulty', 'N/A')}</p>
+        <p><strong>External Link:</strong> {props.get('External Link', 'N/A')}</p>
+    </div>
+    """
+    return folium.Popup(html)
+
 # --- Add Layers to Map ---
 
 # Add Trails Layer
@@ -79,9 +110,8 @@ if show_trails and not trails_gdf.empty:
             'weight': 4, 
             'opacity': 0.8
         },
-        tooltip=folium.GeoJsonTooltip(fields=['Trail Name', 'Length (mi)', 'Surface Type', 'ADA Accessible', 'External Link'],
-                                      aliases=['Trail Name:', 'Length (mi):', 'Surface Type:', 'ADA Accessible:', 'External Link:'],
-                                      localize=True)
+        # Use a lambda function to create the popup for each feature
+        on_each_feature=lambda feature, layer: layer.bind_popup(trails_popup(feature))
     ).add_to(m)
 
 # Add Parks Layer
@@ -98,11 +128,9 @@ if show_parks and not parks_gdf.empty:
             opacity=1,
             fill_opacity=0.8
         ),
-        tooltip=folium.GeoJsonTooltip(fields=['Name', 'Description', 'Amenities', 'Acres', 'External Link'],
-                                      aliases=['Name:', 'Description:', 'Amenities:', 'Acres:', 'External Link:'],
-                                      localize=True)
+        # Use a lambda function to create the popup for each feature
+        on_each_feature=lambda feature, layer: layer.bind_popup(parks_popup(feature))
     ).add_to(m)
-
 
 # Add a layer control to the map
 folium.LayerControl().add_to(m)
