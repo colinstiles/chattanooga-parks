@@ -356,7 +356,7 @@
 
     <!-- Leaflet JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    
+
     <script>
         class ChattanoogaMap {
             constructor() {
@@ -490,117 +490,23 @@
                 setTimeout(() => errorEl.classList.remove('active'), 5000);
             }
             
-            loadData() {
+            // This is the new, updated method to fetch your data
+            async loadData() {
                 this.showLoading();
                 
-                // Load sample data - replace these with your actual GeoJSON files
-                this.loadSampleData();
-            }
-            
-            loadSampleData() {
-                // Sample parks data
-                const sampleParks = {
-                    "type": "FeatureCollection",
-                    "features": [
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Coolidge Park",
-                                "type": "Park",
-                                "description": "Beautiful riverside park with playground and carousel",
-                                "area": "15 acres",
-                                "amenities": "Playground, Carousel, Walking paths"
-                            },
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [-85.3089, 35.0581]
-                            }
-                        },
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Renaissance Park",
-                                "type": "Park",
-                                "description": "Large park with sports facilities and lake",
-                                "area": "120 acres",
-                                "amenities": "Sports fields, Lake, Trails"
-                            },
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [-85.2234, 35.0297]
-                            }
-                        },
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Greenway Farm Park",
-                                "type": "Park",
-                                "description": "Community park with farm theme",
-                                "area": "25 acres",
-                                "amenities": "Farm animals, Trails, Picnic areas"
-                            },
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [-85.1876, 35.0123]
-                            }
-                        }
-                    ]
-                };
-                
-                // Sample trails data
-                const sampleTrails = {
-                    "type": "FeatureCollection",
-                    "features": [
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Tennessee Riverwalk",
-                                "type": "Trail",
-                                "description": "Scenic walking trail along the Tennessee River",
-                                "length": "13 miles",
-                                "difficulty": "Easy",
-                                "surface": "Paved"
-                            },
-                            "geometry": {
-                                "type": "LineString",
-                                "coordinates": [
-                                    [-85.3089, 35.0581],
-                                    [-85.3000, 35.0500],
-                                    [-85.2900, 35.0450],
-                                    [-85.2800, 35.0400]
-                                ]
-                            }
-                        },
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Stringers Ridge Trail",
-                                "type": "Trail",
-                                "description": "Mountain biking and hiking trail with city views",
-                                "length": "3.2 miles",
-                                "difficulty": "Moderate",
-                                "surface": "Natural"
-                            },
-                            "geometry": {
-                                "type": "LineString",
-                                "coordinates": [
-                                    [-85.2934, 35.0789],
-                                    [-85.2900, 35.0820],
-                                    [-85.2870, 35.0850],
-                                    [-85.2840, 35.0880]
-                                ]
-                            }
-                        }
-                    ]
-                };
-                
                 try {
-                    this.loadParks(sampleParks);
-                    this.loadTrails(sampleTrails);
+                    const parksResponse = await fetch('chatt_parks.geojson');
+                    const parksData = await parksResponse.json();
+                    this.loadParks(parksData);
+
+                    const trailsResponse = await fetch('chatt_trails.geojson');
+                    const trailsData = await trailsResponse.json();
+                    this.loadTrails(trailsData);
+                    
                     this.hideLoading();
                 } catch (error) {
                     this.hideLoading();
-                    this.showError('Error loading map data');
+                    this.showError('Error loading map data. Make sure the GeoJSON files are in the same directory.');
                     console.error('Error loading data:', error);
                 }
             }
@@ -619,16 +525,19 @@
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
-                        const popupContent = `
-                            <div class="popup-content">
-                                <div class="feature-type park">PARK</div>
-                                <h3>${props.name}</h3>
-                                <p><strong>Description:</strong> ${props.description}</p>
-                                <p><strong>Area:</strong> ${props.area}</p>
-                                <p><strong>Amenities:</strong> ${props.amenities}</p>
-                            </div>
-                        `;
-                        layer.bindPopup(popupContent);
+                        // Check if properties exist before creating the popup
+                        if (props) {
+                            const popupContent = `
+                                <div class="popup-content">
+                                    <div class="feature-type park">PARK</div>
+                                    <h3>${props.name || 'No Name'}</h3>
+                                    <p><strong>Description:</strong> ${props.description || 'N/A'}</p>
+                                    <p><strong>Area:</strong> ${props.area || 'N/A'}</p>
+                                    <p><strong>Amenities:</strong> ${props.amenities || 'N/A'}</p>
+                                </div>
+                            `;
+                            layer.bindPopup(popupContent);
+                        }
                     }
                 }).addTo(this.map);
                 
@@ -644,17 +553,20 @@
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
-                        const popupContent = `
-                            <div class="popup-content">
-                                <div class="feature-type trail">TRAIL</div>
-                                <h3>${props.name}</h3>
-                                <p><strong>Description:</strong> ${props.description}</p>
-                                <p><strong>Length:</strong> ${props.length}</p>
-                                <p><strong>Difficulty:</strong> ${props.difficulty}</p>
-                                <p><strong>Surface:</strong> ${props.surface}</p>
-                            </div>
-                        `;
-                        layer.bindPopup(popupContent);
+                        // Check if properties exist before creating the popup
+                        if (props) {
+                            const popupContent = `
+                                <div class="popup-content">
+                                    <div class="feature-type trail">TRAIL</div>
+                                    <h3>${props.name || 'No Name'}</h3>
+                                    <p><strong>Description:</strong> ${props.description || 'N/A'}</p>
+                                    <p><strong>Length:</strong> ${props.length || 'N/A'}</p>
+                                    <p><strong>Difficulty:</strong> ${props.difficulty || 'N/A'}</p>
+                                    <p><strong>Surface:</strong> ${props.surface || 'N/A'}</p>
+                                </div>
+                            `;
+                            layer.bindPopup(popupContent);
+                        }
                     }
                 }).addTo(this.map);
                 
