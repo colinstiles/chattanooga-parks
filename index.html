@@ -295,7 +295,7 @@
 <body>
     <div class="app-container">
         <div class="header">
-            <h1>🌲 Chattanooga Parks & Trails Explorer</h1>
+            <h1>Chattanooga Parks & Trails Explorer</h1>
         </div>
         
         <div class="map-container">
@@ -557,11 +557,11 @@
                             const popupContent = `
                                 <div class="popup-content">
                                     <div class="feature-type trail">TRAIL</div>
-                                    <h3>${props['name'] || 'No Name'}</h3>
-                                    <p><strong>Description:</strong> ${props['Description'] || 'N/A'}</p>
-                                    <p><strong>Length:</strong> ${props['Length (mi)'] || props['length'] || 'N/A'}</p>
-                                    <p><strong>Difficulty:</strong> ${props['Difficulty'] || 'N/A'}</p>
-                                    <p><strong>Surface:</strong> ${props['Surface'] || 'N/A'}</p>
+                                    <h3>${props['NAME'] || 'No Name'}</h3>
+                                    <p><strong>Trail Type:</strong> ${props['TRAIL_TYPE'] || 'N/A'}</p>
+                                    <p><strong>Length (mi):</strong> ${props['LENGTH_MI'] || 'N/A'}</p>
+                                    <p><strong>ADA Accessible:</strong> ${props['ADA'] || 'N/A'}</p>
+                                    <p><strong>External Link:</strong> ${props['EXT_LINK'] || 'N/A'}</p>
                                 </div>
                             `;
                             layer.bindPopup(popupContent);
