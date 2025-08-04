@@ -20,43 +20,35 @@ def load_data():
     """Load GeoJSON data for parks and trails."""
     try:
         parks_gdf = gpd.read_file("chatt_parks.geojson")
-        trails_gdf = gpd.read_file("tn_trails.geojson")
+        trails_gdf = gpd.read_file("chatt_trails.geojson")
         
-        # --- Data Cleaning for Missing Geometries with Logging ---
-        # Identify and log problematic rows before dropping them.
-        st.info("Starting geometry validation...")
+        # --- Aggressive Geometry Repair and Cleaning ---
         
-        # Parks GeoDataFrame
-        invalid_parks = parks_gdf[~parks_gdf.geometry.is_valid]
-        empty_parks = parks_gdf[parks_gdf.geometry.is_empty]
-        na_parks = parks_gdf[parks_gdf.geometry.isna()]
-        
-        if not invalid_parks.empty:
-            st.warning(f"Found {len(invalid_parks)} invalid park geometries. These will be removed.")
-        if not empty_parks.empty:
-            st.warning(f"Found {len(empty_parks)} empty park geometries. These will be removed.")
-        if not na_parks.empty:
-            st.warning(f"Found {len(na_parks)} parks with missing (NaN) geometries. These will be removed.")
-            
-        parks_gdf = parks_gdf[parks_gdf.geometry.is_valid & ~parks_gdf.geometry.is_empty & ~parks_gdf.geometry.isna()]
+        # 1. First, attempt to repair any invalid geometries.
+        # This can fix issues like self-intersections.
+        parks_gdf['geometry'] = parks_gdf.geometry.make_valid()
+        trails_gdf['geometry'] = trails_gdf.geometry.make_valid()
 
-        # Trails GeoDataFrame
-        invalid_trails = trails_gdf[~trails_gdf.geometry.is_valid]
-        empty_trails = trails_gdf[trails_gdf.geometry.is_empty]
-        na_trails = trails_gdf[trails_gdf.geometry.isna()]
-        
-        if not invalid_trails.empty:
-            st.warning(f"Found {len(invalid_trails)} invalid trail geometries. These will be removed.")
-        if not empty_trails.empty:
-            st.warning(f"Found {len(empty_trails)} empty trail geometries. These will be removed.")
-        if not na_trails.empty:
-            st.warning(f"Found {len(na_trails)} trails with missing (NaN) geometries. These will be removed.")
-        
+        # 2. Then, filter out any remaining invalid, empty, or None geometries.
+        # This is a very robust filter.
+        original_parks_count = len(parks_gdf)
+        parks_gdf = parks_gdf[parks_gdf.geometry.is_valid & ~parks_gdf.geometry.is_empty & ~parks_gdf.geometry.isna()]
+        removed_parks_count = original_parks_count - len(parks_gdf)
+        if removed_parks_count > 0:
+            st.warning(f"Removed {removed_parks_count} parks with invalid or empty geometries after repair.")
+            
+        original_trails_count = len(trails_gdf)
         trails_gdf = trails_gdf[trails_gdf.geometry.is_valid & ~trails_gdf.geometry.is_empty & ~trails_gdf.geometry.isna()]
+        removed_trails_count = original_trails_count - len(trails_gdf)
+        if removed_trails_count > 0:
+            st.warning(f"Removed {removed_trails_count} trails with invalid or empty geometries after repair.")
         
-        st.success("Geometry validation complete.")
-        
-        # --- Data Cleaning for JSON Serialization ---
+        # Check if the dataframe is empty after cleaning
+        if parks_gdf.empty or trails_gdf.empty:
+            st.error("After cleaning, one of the GeoDataFrames is empty. This may be why the app is failing.")
+            st.stop()
+
+        # --- Data Cleaning for JSON Serialization (from previous fix) ---
         for col in parks_gdf.columns:
             if parks_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
                 parks_gdf[col] = parks_gdf[col].astype(str)
