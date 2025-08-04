@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # --- Title and Header ---
-st.title("🌲 Chattanooga Parks & Trails Explorer")
+st.title("Chattanooga Parks & Trails Explorer")
 st.markdown("Use the controls below to explore parks and trails in Chattanooga.")
 
 # --- Data Loading ---
@@ -21,6 +21,21 @@ def load_data():
     try:
         parks_gdf = gpd.read_file("chatt_parks.geojson")
         trails_gdf = gpd.read_file("chatt_trails.geojson")
+        
+        # --- Data Cleaning for JSON Serialization ---
+        # Folium requires all data types to be JSON serializable.
+        # This converts all object, date, and other non-standard types to strings.
+        
+        # Process Parks GeoDataFrame
+        for col in parks_gdf.columns:
+            if parks_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
+                parks_gdf[col] = parks_gdf[col].astype(str)
+        
+        # Process Trails GeoDataFrame
+        for col in trails_gdf.columns:
+            if trails_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
+                trails_gdf[col] = trails_gdf[col].astype(str)
+
         return parks_gdf, trails_gdf
     except Exception as e:
         st.error(f"Error loading GeoJSON data: {e}")
