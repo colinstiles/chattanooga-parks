@@ -526,9 +526,14 @@
                                 <div class="popup-content">
                                     <div class="feature-type park">PARK</div>
                                     <h3>${props['Name'] || props['name'] || 'No Name'}</h3>
-                                    <p><strong>Description:</strong> ${props['Description'] || 'N/A'}</p>
-                                    <p><strong>Acres:</strong> ${props['Acres'] || 'N/A'}</p>
-                                    <p><strong>Amenities:</strong> ${props['Amenities'] || 'N/A'}</p>
+                                    <p><strong>Address:</strong> ${props['ADDRESS'] || 'N/A'}</p>
+                                    <p><strong>Amenities:</strong> ${props['AMENITIES'] || 'N/A'}</p>
+                                    <p><strong>Hours:</strong> ${props['HOURS'] || 'N/A'}</p>
+                                    <p><strong>Description:</strong> ${props['DESCRIPTION'] || 'N/A'}</p>
+                                    <p><strong>External Link:</strong> ${props['EXT_LINK'] || 'N/A'}</p>
+                                    <p><strong>Acres:</strong> ${props['ACRES'] || 'N/A'}</p>
+                                    <p><strong>Latitude:</strong> ${props['LATITUDE'] || 'N/A'}</p>
+                                    <p><strong>Longitude:</strong> ${props['LONGITUDE'] || 'N/A'}</p>
                                 </div>
                             `;
                             layer.bindPopup(popupContent);
