@@ -1,7 +1,7 @@
 import streamlit as st
 import geopandas as gpd
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 
 # --- App Configuration ---
 st.set_page_config(
@@ -137,4 +137,4 @@ folium.LayerControl().add_to(m)
 
 # --- Display Map in Streamlit ---
 # Render the map using streamlit-folium
-folium_static(m, width=900, height=600)
+st_folium(m, width=900, height=600)
