@@ -22,35 +22,48 @@ def load_data():
         parks_gdf = gpd.read_file("chatt_parks.geojson")
         trails_gdf = gpd.read_file("chatt_trails.geojson")
         
-        # --- Data Cleaning for JSON Serialization ---
-        # Folium requires all data types to be JSON serializable.
-        # This converts all object, date, and other non-standard types to strings.
+        # --- Data Cleaning for Missing Geometries with Logging ---
+        # Identify and log problematic rows before dropping them.
+        st.info("Starting geometry validation...")
         
-        # Process Parks GeoDataFrame
+        # Parks GeoDataFrame
+        invalid_parks = parks_gdf[~parks_gdf.geometry.is_valid]
+        empty_parks = parks_gdf[parks_gdf.geometry.is_empty]
+        na_parks = parks_gdf[parks_gdf.geometry.isna()]
+        
+        if not invalid_parks.empty:
+            st.warning(f"Found {len(invalid_parks)} invalid park geometries. These will be removed.")
+        if not empty_parks.empty:
+            st.warning(f"Found {len(empty_parks)} empty park geometries. These will be removed.")
+        if not na_parks.empty:
+            st.warning(f"Found {len(na_parks)} parks with missing (NaN) geometries. These will be removed.")
+            
+        parks_gdf = parks_gdf[parks_gdf.geometry.is_valid & ~parks_gdf.geometry.is_empty & ~parks_gdf.geometry.isna()]
+
+        # Trails GeoDataFrame
+        invalid_trails = trails_gdf[~trails_gdf.geometry.is_valid]
+        empty_trails = trails_gdf[trails_gdf.geometry.is_empty]
+        na_trails = trails_gdf[trails_gdf.geometry.isna()]
+        
+        if not invalid_trails.empty:
+            st.warning(f"Found {len(invalid_trails)} invalid trail geometries. These will be removed.")
+        if not empty_trails.empty:
+            st.warning(f"Found {len(empty_trails)} empty trail geometries. These will be removed.")
+        if not na_trails.empty:
+            st.warning(f"Found {len(na_trails)} trails with missing (NaN) geometries. These will be removed.")
+        
+        trails_gdf = trails_gdf[trails_gdf.geometry.is_valid & ~trails_gdf.geometry.is_empty & ~trails_gdf.geometry.isna()]
+        
+        st.success("Geometry validation complete.")
+        
+        # --- Data Cleaning for JSON Serialization ---
         for col in parks_gdf.columns:
             if parks_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
                 parks_gdf[col] = parks_gdf[col].astype(str)
         
-        # Process Trails GeoDataFrame
         for col in trails_gdf.columns:
             if trails_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
                 trails_gdf[col] = trails_gdf[col].astype(str)
-
-        # --- Data Cleaning for Missing Geometries ---
-        # Folium cannot handle missing or empty geometries.
-        # We must drop rows with a null or empty geometry object.
-        
-        # Drop rows where the geometry is None or NaN
-        parks_gdf = parks_gdf[parks_gdf.geometry.is_valid]
-        parks_gdf = parks_gdf[~parks_gdf.geometry.isna()]
-        
-        # Drop rows with empty geometries
-        parks_gdf = parks_gdf[~parks_gdf.geometry.is_empty]
-        
-        # Do the same for the trails GeoDataFrame
-        trails_gdf = trails_gdf[trails_gdf.geometry.is_valid]
-        trails_gdf = trails_gdf[~trails_gdf.geometry.isna()]
-        trails_gdf = trails_gdf[~trails_gdf.geometry.is_empty]
 
         return parks_gdf, trails_gdf
     except Exception as e:
