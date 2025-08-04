@@ -2,5 +2,5 @@ streamlit
 pandas
 geopandas
 folium
-streamlit-folium
-folium-static
+streamlit_folium
+folium_static
