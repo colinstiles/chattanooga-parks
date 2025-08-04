@@ -36,6 +36,22 @@ def load_data():
             if trails_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
                 trails_gdf[col] = trails_gdf[col].astype(str)
 
+        # --- Data Cleaning for Missing Geometries ---
+        # Folium cannot handle missing or empty geometries.
+        # We must drop rows with a null or empty geometry object.
+        
+        # Drop rows where the geometry is None or NaN
+        parks_gdf = parks_gdf[parks_gdf.geometry.is_valid]
+        parks_gdf = parks_gdf[~parks_gdf.geometry.isna()]
+        
+        # Drop rows with empty geometries
+        parks_gdf = parks_gdf[~parks_gdf.geometry.is_empty]
+        
+        # Do the same for the trails GeoDataFrame
+        trails_gdf = trails_gdf[trails_gdf.geometry.is_valid]
+        trails_gdf = trails_gdf[~trails_gdf.geometry.isna()]
+        trails_gdf = trails_gdf[~trails_gdf.geometry.is_empty]
+
         return parks_gdf, trails_gdf
     except Exception as e:
         st.error(f"Error loading GeoJSON data: {e}")
