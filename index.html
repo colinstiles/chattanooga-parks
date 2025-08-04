@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chattanooga Parks & Trails</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
+    <!-- Custom CSS -->
     <style>
         * {
             margin: 0;
@@ -21,27 +23,72 @@
             overflow: hidden;
         }
 
+        /* --- Splash Screen Styling --- */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1s ease-out, visibility 1s ease-out;
+        }
+
+        #splashScreen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-content {
+            padding: 20px;
+            max-width: 600px;
+        }
+
+        .splash-content h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .splash-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .splash-button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #764ba2;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .splash-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Main App Styling --- */
         .app-container {
             position: relative;
             height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        .header h1 {
-            color: #2c3e50;
-            font-size: 24px;
-            font-weight: 600;
-            text-align: center;
-            margin: 0;
         }
 
         .map-container {
@@ -54,7 +101,6 @@
         #map {
             height: 100%;
             width: 100%;
-            background-color: lightgray;
         }
 
         .control-panel {
@@ -230,7 +276,7 @@
         .error-message.active {
             display: block;
         }
-
+        
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .header h1 {
@@ -248,8 +294,12 @@
             .control-panel.collapsed {
                 transform: translateY(calc(-100% + 50px));
             }
-        }
 
+            .splash-content h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
         /* Custom Leaflet popup styling */
         .leaflet-popup-content-wrapper {
             border-radius: 12px;
@@ -293,10 +343,18 @@
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <h1>Chattanooga Parks & Trails Explorer</h1>
+    <!-- Splash Screen -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <h1>Welcome to the Chattanooga Parks & Trails Explorer</h1>
+            <p>Explore the natural beauty and recreational opportunities that Chattanooga has to offer. Use this interactive map to discover parks and trails across the city, complete with details on amenities, trail types, and more.</p>
+            <p>Our app provides an easy way to visualize and interact with the city's green spaces, from the scenic Riverwalk to the challenging trails of Stringer's Ridge.</p>
+            <button class="splash-button" id="enterMapButton">Enter Map</button>
         </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
         
         <div class="map-container">
             <div id="map"></div>
@@ -353,6 +411,7 @@
         </div>
     </div>
 
+    <!-- Leaflet JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
@@ -365,8 +424,17 @@
                 this.currentBasemap = 'street';
                 this.defaultCenter = [35.0456, -85.3097]; // Chattanooga coordinates
                 this.defaultZoom = 11;
-                
-                this.init();
+
+                // Bind the 'Enter Map' button click to the app's initialization
+                document.getElementById('enterMapButton').addEventListener('click', () => {
+                    this.hideSplashScreen();
+                    this.init();
+                });
+            }
+
+            hideSplashScreen() {
+                const splashScreen = document.getElementById('splashScreen');
+                splashScreen.classList.add('hidden');
             }
             
             init() {
@@ -393,8 +461,8 @@
                 const esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     attribution: '© Esri'
                 });
-                const esriTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: '© Esri'
+                const stamenTerrain = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {
+                    attribution: '© Stamen Design'
                 });
                 const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
                     attribution: '© Esri'
@@ -405,7 +473,7 @@
                         attribution: '© OpenStreetMap contributors'
                     }),
                     satellite: esriImagery,
-                    terrain: esriTerrain,
+                    terrain: stamenTerrain,
                     hybrid: L.layerGroup([esriImagery, esriLabels])
                 };
                 
@@ -487,22 +555,25 @@
                 setTimeout(() => errorEl.classList.remove('active'), 5000);
             }
             
+            // This method fetches the data from the provided GeoJSON files
             async loadData() {
                 this.showLoading();
                 
                 try {
                     const parksResponse = await fetch('chatt_parks.geojson');
+                    if (!parksResponse.ok) throw new Error(`HTTP error! Status: ${parksResponse.status}`);
                     const parksData = await parksResponse.json();
                     this.loadParks(parksData);
 
                     const trailsResponse = await fetch('chatt_trails.geojson');
+                    if (!trailsResponse.ok) throw new Error(`HTTP error! Status: ${trailsResponse.status}`);
                     const trailsData = await trailsResponse.json();
                     this.loadTrails(trailsData);
                     
                     this.hideLoading();
                 } catch (error) {
                     this.hideLoading();
-                    this.showError('Error loading map data. Make sure the GeoJSON files are in the same directory.');
+                    this.showError(`Error loading map data: ${error.message}. Make sure the GeoJSON files are in the same directory.`);
                     console.error('Error loading data:', error);
                 }
             }
@@ -573,7 +644,7 @@
             }
         }
         
-        // Initialize the map when the page loads
+        // When the page loads, we'll wait for the user to click the button
         document.addEventListener('DOMContentLoaded', () => {
             new ChattanoogaMap();
         });
