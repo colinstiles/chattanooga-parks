@@ -25,29 +25,33 @@ def load_data():
         # --- Aggressive Geometry Repair and Cleaning ---
         
         # 1. First, attempt to repair any invalid geometries.
-        # This can fix issues like self-intersections.
         parks_gdf['geometry'] = parks_gdf.geometry.make_valid()
         trails_gdf['geometry'] = trails_gdf.geometry.make_valid()
-
-        # 2. Then, filter out any remaining invalid, empty, or None geometries.
-        # This is a very robust filter.
+        
+        # 2. Explode multi-part geometries into single-part geometries.
+        # This handles GeometryCollection and other multi-geometries which might
+        # contain a single empty part, causing the error.
+        parks_gdf = parks_gdf.explode(index_parts=False)
+        trails_gdf = trails_gdf.explode(index_parts=False)
+        
+        # 3. Filter out any remaining invalid, empty, or None geometries.
         original_parks_count = len(parks_gdf)
         parks_gdf = parks_gdf[parks_gdf.geometry.is_valid & ~parks_gdf.geometry.is_empty & ~parks_gdf.geometry.isna()]
         removed_parks_count = original_parks_count - len(parks_gdf)
         if removed_parks_count > 0:
-            st.warning(f"Removed {removed_parks_count} parks with invalid or empty geometries after repair.")
+            st.warning(f"Removed {removed_parks_count} parks with invalid or empty geometries after repair and explode.")
             
         original_trails_count = len(trails_gdf)
         trails_gdf = trails_gdf[trails_gdf.geometry.is_valid & ~trails_gdf.geometry.is_empty & ~trails_gdf.geometry.isna()]
         removed_trails_count = original_trails_count - len(trails_gdf)
         if removed_trails_count > 0:
-            st.warning(f"Removed {removed_trails_count} trails with invalid or empty geometries after repair.")
+            st.warning(f"Removed {removed_trails_count} trails with invalid or empty geometries after repair and explode.")
         
         # Check if the dataframe is empty after cleaning
         if parks_gdf.empty or trails_gdf.empty:
             st.error("After cleaning, one of the GeoDataFrames is empty. This may be why the app is failing.")
-            st.stop()
-
+            return None, None
+            
         # --- Data Cleaning for JSON Serialization (from previous fix) ---
         for col in parks_gdf.columns:
             if parks_gdf[col].dtype.name not in ['object', 'int64', 'float64', 'bool']:
