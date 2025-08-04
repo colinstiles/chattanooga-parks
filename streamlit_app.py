@@ -20,7 +20,7 @@ def load_data():
     """Load GeoJSON data for parks and trails."""
     try:
         parks_gdf = gpd.read_file("chatt_parks.geojson")
-        trails_gdf = gpd.read_file("chatt_trails.geojson")
+        trails_gdf = gpd.read_file("tn_trails.geojson")
         
         # --- Data Cleaning for Missing Geometries with Logging ---
         # Identify and log problematic rows before dropping them.
