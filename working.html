@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chattanooga Parks & Trails</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
+    <!-- Custom CSS -->
     <style>
         * {
             margin: 0;
@@ -291,6 +293,7 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
     <div id="splashScreen">
         <div class="splash-content">
             <h1>Welcome to the Chattanooga Parks & Trails Explorer</h1>
@@ -300,6 +303,7 @@
         </div>
     </div>
 
+    <!-- Main App Container -->
     <div class="app-container">
         
         <div class="map-container">
@@ -326,6 +330,7 @@
         </div>
     </div>
 
+    <!-- Leaflet JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
@@ -335,10 +340,11 @@
                 this.parksLayer = null;
                 this.trailsLayer = null;
                 this.baseMaps = {};
-                this.overlayMaps = {}; 
+                this.overlayMaps = {};
                 this.defaultCenter = [35.0456, -85.3097]; // Chattanooga coordinates
                 this.defaultZoom = 11;
 
+                // Bind the 'Enter Map' button click to the app's initialization
                 document.getElementById('enterMapButton').addEventListener('click', () => {
                     this.hideSplashScreen();
                     this.init();
@@ -349,7 +355,7 @@
                 const splashScreen = document.getElementById('splashScreen');
                 splashScreen.classList.add('hidden');
             }
-            
+
             init() {
                 this.initMap();
                 this.initBaseMaps();
@@ -364,35 +370,45 @@
                     zoomControl: false
                 });
                 
+                // Add custom zoom control
                 L.control.zoom({
                     position: 'bottomright'
                 }).addTo(this.map);
             }
             
             initBaseMaps() {
-                const esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                const esriTopo = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
                     attribution: '© Esri'
                 });
-                const stamenTerrain = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {
-                    attribution: '© Stamen Design'
+                const NatGeo = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri'
+                });
+                const esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri'
                 });
                 const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
                     attribution: '© Esri'
                 });
+                const esriPhysical = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri'
+                });
 
                 this.baseMaps = {
+                    "Topo": esriTopo,
+                    "National Geographic": NatGeo,
                     "Street Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '© OpenStreetMap contributors'
                     }),
-                    "Satellite": esriImagery,
-                    "Terrain": stamenTerrain,
-                    "Hybrid": L.layerGroup([esriImagery, esriLabels])
+                    "Imagery": esriImagery,
+                    "Hybrid Imagery": L.layerGroup([esriImagery, esriLabels]),
+                    "Natural Physical": esriPhysical,
                 };
                 
-                this.baseMaps["Street Map"].addTo(this.map);
+                this.baseMaps["Topo"].addTo(this.map);
             }
             
             initControls() {
+                // Panel toggle
                 document.getElementById('togglePanel').addEventListener('click', () => {
                     const panel = document.getElementById('controlPanel');
                     const btn = document.getElementById('togglePanel');
@@ -406,6 +422,7 @@
                     }
                 });
                 
+                // Reset view
                 document.getElementById('resetView').addEventListener('click', () => {
                     this.resetView();
                 });
@@ -430,6 +447,7 @@
                 setTimeout(() => errorEl.classList.remove('active'), 5000);
             }
             
+            // This method fetches the data from the provided GeoJSON files
             async loadData() {
                 this.showLoading();
                 
@@ -443,11 +461,13 @@
                     if (!trailsResponse.ok) throw new Error(`HTTP error! Status: ${trailsResponse.status}`);
                     const trailsData = await trailsResponse.json();
                     this.loadTrails(trailsData);
-                    
-                    this.setInitialView();
-                    
-                    L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false }).addTo(this.map);
 
+                    // After loading data, set map initial view
+                    this.setInitialView();
+
+                    // Create the Leaflet layer control
+                    L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false }).addTo(this.map);
+                    
                     this.hideLoading();
                 } catch (error) {
                     this.hideLoading();
@@ -490,6 +510,7 @@
                     }
                 });
                 
+                // Add parks layer to overlayMaps object for control
                 this.overlayMaps["Parks"] = this.parksLayer;
             }
             
@@ -518,21 +539,13 @@
                     }
                 });
                 
+                // Add trails layer to the overlayMaps object for control
                 this.overlayMaps["Trails"] = this.trailsLayer;
             }
 
             setInitialView() {
-                // Combine layers into a single FeatureGroup to get the combined bounds
-                const allLayers = L.featureGroup();
-                if (this.parksLayer) {
-                    allLayers.addLayer(this.parksLayer);
-                }
                 if (this.trailsLayer) {
-                    allLayers.addLayer(this.trailsLayer);
-                }
-                
-                if (allLayers.getBounds().isValid()) {
-                    this.map.fitBounds(allLayers.getBounds());
+                    this.map.fitBounds(this.trailsLayer.getBounds());
                 } else {
                     this.map.setView(this.defaultCenter, this.defaultZoom);
                 }
@@ -546,10 +559,11 @@
                 }
             }
         }
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             new ChattanoogaMap();
         });
+        
     </script>
 </body>
 </html>
