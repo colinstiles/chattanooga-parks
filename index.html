@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chattanooga Parks & Trails</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
-    <!-- Custom CSS -->
     <style>
         * {
             margin: 0;
@@ -113,77 +111,21 @@
             width: 100%;
         }
 
-        .control-panel {
+        /* Standalone Reset Button Styling */
+        .reset-btn {
             position: absolute;
             bottom: 15px;
             left: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            min-width: 250px;
-            max-width: 300px;
-            transition: all 0.3s ease;
-        }
-
-        .control-panel.collapsed {
-            transform: translateX(calc(100% - 50px));
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .toggle-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .control-section {
-            margin-bottom: 20px;
-        }
-
-        .control-section h3 {
-            font-size: 14px;
-            color: #34495e;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .reset-btn {
             background: linear-gradient(45deg, #e74c3c, #c0392b);
             color: white;
             border: none;
             border-radius: 8px;
             padding: 10px 15px;
-            width: 100%;
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
+            z-index: 1000; /* Ensure it's above the map */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
         }
 
@@ -243,18 +185,6 @@
                 font-size: 20px;
             }
             
-            .control-panel {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: none;
-                min-width: auto;
-            }
-            
-            .control-panel.collapsed {
-                transform: translateY(calc(-100% + 50px));
-            }
-
             .splash-content h1 {
                 font-size: 2.5rem;
             }
@@ -303,13 +233,12 @@
     </style>
 </head>
 <body>
-    <!-- Splash Screen -->
     <div id="splashScreen">
         <div class="splash-content">
             <h1>Welcome to the Chattanooga Parks & Trails Explorer</h1>
             <p><strong>What it shows:</strong> This interactive map displays public parks and trails throughout the greater Chattanooga area, with detailed information on addresses, amenities, trail types and lengths, and accessibility features.</p>
             
-            <p><strong>How to use:</strong> In the upper-right corner, you can toggle between different base maps, turn on/off the map's layers, and see the layer's legend. The lower-left corner has a button to reset the view of the map to its original setting. The lower-right corner has map zoom controls, or you can use the mouse/touchpad zoom settings. Click on a park or trail in the map to view the pop-up information for each feature.</p>
+            <p><strong>How to use:</strong> In the upper-right corner, you can toggle between different base maps, turn on/off the map's layers, and see the layer's legend. The lower-right corner has map zoom controls, or you can use the mouse/touchpad zoom settings. Click on a park or trail in the map to view the pop-up information for each feature.</p>
             
             <p><strong>Data Source:</strong> Geometry data is sourced from the <a href="https://trec.tn.gov/" target="_blank" style="color: #87CEEB; text-decoration: underline;">TREC Project (Trails-Recreation-Environment-Community)</a>.</p>
             
@@ -323,34 +252,21 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
     <div class="app-container">
         
         <div class="map-container">
             <div id="map"></div>
             
-            <div class="control-panel" id="controlPanel">
-                <div class="panel-header">
-                    <div class="panel-title">Map Controls</div>
-                    <button class="toggle-btn" id="togglePanel">Hide</button>
-                </div>
-                
-                <div class="error-message" id="errorMessage"></div>
-                
-                <div class="control-section">
-                    <h3>Map Actions</h3>
-                    <button class="reset-btn" id="resetView">Reset View</button>
-                </div>
-            </div>
-            
             <div class="loading" id="loadingIndicator">
                 <div class="spinner"></div>
                 <div>Loading map data...</div>
             </div>
+            <div class="error-message" id="errorMessage"></div>
         </div>
+        
+        <button class="reset-btn" id="resetView">Reset View</button>
     </div>
 
-    <!-- Leaflet JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
@@ -426,20 +342,6 @@
             }
             
             initControls() {
-                // Panel toggle
-                document.getElementById('togglePanel').addEventListener('click', () => {
-                    const panel = document.getElementById('controlPanel');
-                    const btn = document.getElementById('togglePanel');
-                    
-                    if (panel.classList.contains('collapsed')) {
-                        panel.classList.remove('collapsed');
-                        btn.textContent = 'Hide';
-                    } else {
-                        panel.classList.add('collapsed');
-                        btn.textContent = 'Show';
-                    }
-                });
-                
                 // Reset view
                 document.getElementById('resetView').addEventListener('click', () => {
                     this.resetView();
