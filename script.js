@@ -71,7 +71,6 @@ class ChattanoogaMap {
         document.getElementById('resetView').addEventListener('click', () => {
             this.resetView();
         });
-
     }
     
     resetView() {
