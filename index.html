@@ -56,30 +56,35 @@
         }
 
         .splash-content h1 {
-            font-size: 3rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
         .splash-content p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 30px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
+        .splash-content p strong {
+            color: #e6e6FA;
+        }
+
         .splash-button {
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 10px 20px;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: #764ba2;
+            color: #44753c;
             background: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 15px;
         }
 
         .splash-button:hover {
@@ -301,8 +306,18 @@
     <div id="splashScreen">
         <div class="splash-content">
             <h1>Welcome to the Chattanooga Parks & Trails Explorer</h1>
-            <p>Explore the natural beauty and recreational opportunities that Chattanooga has to offer. Use this interactive map to discover parks and trails across the city, complete with details on amenities, trail types, and more.</p>
-            <p>Our app provides an easy way to visualize and interact with the city's green spaces, from the scenic Riverwalk to the challenging trails of Stringer's Ridge.</p>
+            <p><strong>What it shows:</strong> This interactive map displays public parks and trails throughout Chattanooga, Tennessee, with detailed information on amenities, trail types, lengths, and accessibility features.</p>
+            
+            <p><strong>How to use:</strong> Toggle between different base maps, click on parks (green circles) and trails (orange lines) for details, use the control panel to reset the view, and turn layers on/off using the layer control.</p>
+            
+            <p><strong>Data Source:</strong> Geometry data sourced from Tennessee TREC (Tennessee Research and Creative Exchange).</p>
+            
+            <p><strong>Disclaimer:</strong> This web map is for informational purposes only and is not intended to be used as an authoritative source for navigation or official planning.</p>
+            
+            <p><strong>Repository:</strong> <a href="https://github.com/colinstiles" target="_blank" style="color: #87CEEB; text-decoration: underline;">View on GitHub</a></p>
+            
+            <p><strong>Author:</strong> Colin Stiles</p>
+            
             <button class="splash-button" id="enterMapButton">Enter Map</button>
         </div>
     </div>
