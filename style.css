@@ -1,292 +1,222 @@
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #ffffff;
-            height: 100vh;
-            overflow: hidden;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+}
 
-        /* --- Splash Screen Styling --- */
-        #splashScreen {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50vw;
-            height: 50vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
-            z-index: 9999;
-            opacity: 1;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: opacity 1s ease-out, visibility 1s ease-out;
-        }
+/* --- Splash Screen Styling --- */
+#splashScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50vw;
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    z-index: 9999;
+    opacity: 1;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: opacity 1s ease-out, visibility 1s ease-out;
+}
 
-        #splashScreen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
+#splashScreen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
 
-        .splash-content {
-            padding: 20px;
-            max-width: 100%;
-            width: 100%;
-        }
+.splash-content {
+    padding: 20px;
+    max-width: 100%;
+    width: 100%;
+}
 
-        .splash-content h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
+.splash-content h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
 
-        .splash-content p {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            margin-bottom: 12px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-            text-align: left;
-        }
+.splash-content p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    text-align: left;
+}
 
-        .splash-content p strong {
-            color: #E6E6FA;
-        }
+.splash-content p strong {
+    color: #E6E6FA;
+}
 
-        .splash-button {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #3d713c;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-top: 15px;
-        }
+.splash-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #3d713c;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 15px;
+}
 
-        .splash-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
+.splash-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
 
-        /* --- Main App Styling --- */
-        .app-container {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+/* --- Main App Styling --- */
+.app-container {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
-        .map-container {
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            overflow: hidden;
-        }
+.map-container {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+}
 
-        #map {
-            height: 100%;
-            width: 100%;
-        }
+#map {
+    height: 100%;
+    width: 100%;
+}
 
-        .control-panel {
-            position: absolute;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            min-width: 250px;
-            max-width: 300px;
-            transition: all 0.3s ease;
-        }
+/* Standalone Reset Button Styling */
+.reset-btn {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 1000; /* Ensure it's above the map */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
 
-        .control-panel.collapsed {
-            transform: translateX(calc(100% - 50px));
-        }
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
 
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+    display: none;
+}
 
-        .panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+.loading.active {
+    display: block;
+}
 
-        .toggle-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
 
-        .toggle-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-        .control-section {
-            margin-bottom: 20px;
-        }
+.error-message {
+    background: #e74c3c;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: none;
+}
 
-        .control-section h3 {
-            font-size: 14px;
-            color: #34495e;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
+.error-message.active {
+    display: block;
+}
 
-        .reset-btn {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            width: 100%;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .splash-content h1 {
+        font-size: 2.5rem;
+    }
+}
 
-        .reset-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-        }
+/* Custom Leaflet popup styling */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
 
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            z-index: 2000;
-            display: none;
-        }
+.popup-content {
+    padding: 5px;
+}
 
-        .loading.active {
-            display: block;
-        }
+.popup-content h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
+.popup-content p {
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #34495e;
+}
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+.popup-content .feature-type {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
 
-        .error-message {
-            background: #e74c3c;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: none;
-        }
+.popup-content .feature-type.park {
+    background: #27ae60;
+    color: white;
+}
 
-        .error-message.active {
-            display: block;
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .control-panel {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: none;
-                min-width: auto;
-            }
-            
-            .control-panel.collapsed {
-                transform: translateY(calc(-100% + 50px));
-            }
-
-            .splash-content h1 {
-                font-size: 2.5rem;
-            }
-        }
-        
-        /* Custom Leaflet popup styling */
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-        }
-
-        .popup-content {
-            padding: 5px;
-        }
-
-        .popup-content h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .popup-content p {
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #34495e;
-        }
-
-        .popup-content .feature-type {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .popup-content .feature-type.park {
-            background: #27ae60;
-            color: white;
-        }
-
-        .popup-content .feature-type.trail {
-            background: #f39c12;
-            color: white;
-        }
-    </style>
+.popup-content .feature-type.trail {
+    background: #f39c12;
+    color: white;
+}
