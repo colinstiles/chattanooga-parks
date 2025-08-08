@@ -29,13 +29,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 35vw;
-            height: 35vh;
+            width: 50vw;
+            height: 50vh;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            background: rgba(128, 128, 128, 0.75);
+            background: rgba(0, 0, 0, 0.75);
             color: white;
             z-index: 9999;
             opacity: 1;
@@ -115,8 +115,8 @@
 
         .control-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            bottom: 15px;
+            left: 15px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 12px;
@@ -306,18 +306,18 @@
     <!-- Splash Screen -->
     <div id="splashScreen">
         <div class="splash-content">
-            <h1>Welcome to Chattanooga Parks & Trails Explorer</h1>
-            <p><strong>What it shows:</strong> This interactive map displays public parks and trails throughout Chattanooga, Tennessee, with detailed information on amenities, trail types, lengths, and accessibility features.</p>
+            <h1>Welcome to the Chattanooga Parks & Trails Explorer</h1>
+            <p><strong>What it shows:</strong> This interactive map displays public parks and trails throughout the greater Chattanooga area, with detailed information on addresses, amenities, trail types and lengths, and accessibility features.</p>
             
-            <p><strong>How to use:</strong> Toggle between different base maps, click on parks (green circles) and trails (orange lines) for details, use the control panel to reset the view, and turn layers on/off using the layer control.</p>
+            <p><strong>How to use:</strong> In the upper-right corner, you can toggle between different base maps, turn on/off the map's layers, and see the layer's legend. The lower-left corner has a button to reset the view of the map to its original setting. The lower-right corner has map zoom controls, or you can use the mouse/touchpad zoom settings. Click on a park or trail in the map to view the pop-up information for each feature.</p>
             
-            <p><strong>Data Source:</strong> Geometry data sourced from Tennessee TREC (Tennessee Research and Creative Exchange).</p>
+            <p><strong>Data Source:</strong> Geometry data is sourced from the <a href="https://trec.tn.gov/" target="_blank" style="color: #3d713c; text-decoration: underline;">TREC Project (Trails-Recreation-Environment-Community)</a>.</p>
             
-            <p><strong>Disclaimer:</strong> This web map is for informational purposes only and is not intended to be used as an authoritative source for navigation or official planning.</p>
+            <p><strong>Disclaimer:</strong> This web map is for informational purposes only and is not intended to be used as an authoritative source for navigation or planning purposes. The data in this map is not guaranteed to be 100% accurate in its spatial or attribute information.</p>
             
-            <p><strong>Repository:</strong> <a href="https://github.com/colinstiles" target="_blank" style="color: #87CEEB; text-decoration: underline;">View on GitHub</a></p>
+            <p><strong>Repository:</strong> View the source code and access the data on <a href="https://github.com/colinstiles" target="_blank" style="color: #3d713c; text-decoration: underline;">GitHub</a>. If you find an error or missing data, I encourage you to reach out to me via the GitHub Issues in the provided link, or email me at ColinTimothyStiles@gmail.com.</p>
             
-            <p><strong>Author:</strong> Colin Stiles</p>
+            <p><strong>Author:</strong> <a href="https://colinstiles.github.io/gis-portfolio/" target="_blank" style="color: #3d713c; text-decoration: underline;">Colin Stiles</a></p>
             
             <button class="splash-button" id="enterMapButton">Enter Map</button>
         </div>
