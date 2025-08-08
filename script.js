@@ -5,8 +5,6 @@ class ChattanoogaMap {
         this.trailsLayer = null;
         this.baseMaps = {};
         this.overlayMaps = {};
-        this.defaultCenter = [35.0456, -85.3097]; // Chattanooga coordinates
-        this.defaultZoom = 11;
 
         // Initialize map immediately when page loads
         this.init();
@@ -31,8 +29,6 @@ class ChattanoogaMap {
     
     initMap() {
         this.map = L.map('map', {
-            center: this.defaultCenter,
-            zoom: this.defaultZoom,
             zoomControl: false
         });
         
@@ -192,10 +188,14 @@ class ChattanoogaMap {
     }
 
     setInitialView() {
-        if (this.trailsLayer) {
+        const defaultCenter = [35.0456, -85.3097];
+        const defaultZoom = 11;
+
+        // Check if the trails layer has been loaded before attempting to get its bounds
+        if (this.trailsLayer && Object.keys(this.trailsLayer.getBounds()).length > 0) {
             this.map.fitBounds(this.trailsLayer.getBounds());
         } else {
-            this.map.setView(this.defaultCenter, this.defaultZoom);
+            this.map.setView(defaultCenter, defaultZoom);
         }
 
         // Add layers to the map after fitting the view
