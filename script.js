@@ -54,7 +54,7 @@ class ChattanoogaMap {
         });
 
         this.baseMaps = {
-            "Topo": esriTopo,
+            "Topographic": esriTopo,
             "National Geographic": NatGeo,
             "Street Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
