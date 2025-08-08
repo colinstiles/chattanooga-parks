@@ -72,19 +72,6 @@ class ChattanoogaMap {
             this.resetView();
         });
 
-        // Legend
-        const legend = L.control({position: 'topright'});
-
-        legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'info legend');
-            const labels = [];
-            labels.push('<i class="park"></i> Parks');
-            labels.push('<i class="trail"></i> Trails');
-            div.innerHTML = labels.join('<br>');
-            return div;
-        };
-
-        legend.addTo(this.map);
     }
     
     resetView() {
@@ -128,9 +115,14 @@ class ChattanoogaMap {
 
             // After loading data, set map initial view
             this.setInitialView();
+            
+            // Create the Leaflet layer control with the legend symbols inside the layer name
+            this.overlayMaps = {
+                '<i class="park"></i> Parks': this.parksLayer,
+                '<i class="trail"></i> Trails': this.trailsLayer
+            };
 
-            // Create the Leaflet layer control
-            L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false }).addTo(this.map);
+            L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false, position: 'topright' }).addTo(this.map);
             
             this.hideLoading();
         } catch (error) {
@@ -174,8 +166,7 @@ class ChattanoogaMap {
             }
         });
         
-        // Add parks layer to overlayMaps object for control
-        this.overlayMaps["Parks"] = this.parksLayer;
+        // This layer is now added to the overlayMaps object after all data is loaded
     }
     
     loadTrails(geojsonData) {
@@ -203,8 +194,7 @@ class ChattanoogaMap {
             }
         });
         
-        // Add trails layer to the overlayMaps object for control
-        this.overlayMaps["Trails"] = this.trailsLayer;
+        // This layer is now added to the overlayMaps object after all data is loaded
     }
 
     setInitialView() {
