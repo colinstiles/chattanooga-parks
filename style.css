@@ -169,6 +169,31 @@ body {
     display: block;
 }
 
+.legend {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px;
+    border-radius: 8px;
+    line-height: 1.5;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.8;
+}
+
+.legend i.park {
+    background: #27ae60;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.legend i.trail {
+    background: #f39c12;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .header h1 {

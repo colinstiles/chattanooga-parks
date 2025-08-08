@@ -28,6 +28,7 @@ class ChattanoogaMap {
     }
     
     initMap() {
+        // Initialize the map without a default center or zoom
         this.map = L.map('map', {
             zoomControl: false
         });
@@ -70,6 +71,20 @@ class ChattanoogaMap {
         document.getElementById('resetView').addEventListener('click', () => {
             this.resetView();
         });
+
+        // Legend
+        const legend = L.control({position: 'bottomleft'});
+
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            const labels = [];
+            labels.push('<i class="park"></i> Parks');
+            labels.push('<i class="trail"></i> Trails');
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+
+        legend.addTo(this.map);
     }
     
     resetView() {
@@ -91,19 +106,24 @@ class ChattanoogaMap {
         setTimeout(() => errorEl.classList.remove('active'), 5000);
     }
     
-    // This method fetches the data from the provided GeoJSON files
+    // This method fetches the data from the provided GeoJSON files using Promise.all
     async loadData() {
         this.showLoading();
         
         try {
-            const parksResponse = await fetch('chatt_parks.geojson');
-            if (!parksResponse.ok) throw new Error(`HTTP error! Status: ${parksResponse.status}`);
-            const parksData = await parksResponse.json();
-            this.loadParks(parksData);
+            const [parksResponse, trailsResponse] = await Promise.all([
+                fetch('chatt_parks.geojson'),
+                fetch('chatt_trails.geojson')
+            ]);
+            
+            if (!parksResponse.ok || !trailsResponse.ok) {
+                throw new Error('One or more GeoJSON files could not be loaded.');
+            }
 
-            const trailsResponse = await fetch('chatt_trails.geojson');
-            if (!trailsResponse.ok) throw new Error(`HTTP error! Status: ${trailsResponse.status}`);
+            const parksData = await parksResponse.json();
             const trailsData = await trailsResponse.json();
+
+            this.loadParks(parksData);
             this.loadTrails(trailsData);
 
             // After loading data, set map initial view
