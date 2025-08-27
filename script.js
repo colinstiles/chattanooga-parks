@@ -63,7 +63,7 @@ class ChattanoogaMap {
             "Hybrid Imagery": L.layerGroup([esriImagery, esriLabels]),
         };
         
-        this.baseMaps["Topo"].addTo(this.map);
+        this.baseMaps["Topographic"].addTo(this.map);
     }
     
     initControls() {
