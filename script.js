@@ -133,15 +133,12 @@ class ChattanoogaMap {
     
     loadParks(geojsonData) {
         this.parksLayer = L.geoJSON(geojsonData, {
-            pointToLayer: (feature, latlng) => {
-                return L.circleMarker(latlng, {
-                    radius: 8,
-                    fillColor: "#27ae60",
-                    color: "#fff",
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
-                });
+            style: {
+                fillColor: "#27ae60",
+                color: "#fff",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
             },
             onEachFeature: (feature, layer) => {
                 const props = feature.properties;
