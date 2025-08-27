@@ -151,7 +151,7 @@ class ChattanoogaMap {
                             <p><strong>Amenities:</strong> ${props['AMENITIES'] || 'N/A'}</p>
                             <p><strong>Hours:</strong> ${props['HOURS'] || 'N/A'}</p>
                             <p><strong>Description:</strong> ${props['DESCRIPTION'] || 'N/A'}</p>
-                            <p><strong>External Link:</strong> ${props['EXT_LINK'] || 'N/A'}</p>
+                            <p><strong>External Link:</strong> ${props['EXT_LINK'] ? `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A'}</p>
                             <p><strong>Acres:</strong> ${props['ACRES'] || 'N/A'}</p>
                             <p><strong>Latitude:</strong> ${props['LATITUDE'] || 'N/A'}</p>
                             <p><strong>Longitude:</strong> ${props['LONGITUDE'] || 'N/A'}</p>
@@ -182,7 +182,7 @@ class ChattanoogaMap {
                             <p><strong>Trail Type:</strong> ${props['TRAIL_TYPE'] || 'N/A'}</p>
                             <p><strong>Length (mi):</strong> ${props['LENGTH_MI'] || 'N/A'}</p>
                             <p><strong>ADA Accessible:</strong> ${props['ADA'] || 'N/A'}</p>
-                            <p><strong>External Link:</strong> ${props['EXT_LINK'] || 'N/A'}</p>
+                            <p><strong>External Link:</strong> ${props['EXT_LINK'] ? `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A'}</p>
                         </div>
                     `;
                     layer.bindPopup(popupContent);
