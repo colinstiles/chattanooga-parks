@@ -93,6 +93,22 @@ class ChattanoogaMap {
             this.map.panTo(e.geocode.center);
         })
         .addTo(this.map);
+
+        // My Location button
+        document.getElementById('locateMeButton').addEventListener('click', () => {
+           this.map.locate({setView: true, maxZoom: 16}); 
+        });
+
+        this.map.on('locationfound', (e) => {
+            const radius = e.accuracy / 2;
+            L.marker(e.latlng).addTo(this.map)
+                .bindPopup("You are within " + radius + " meters of this point").openPopup();
+            L.circle(e.latlng, radius).addTo(this.map);
+        });
+
+        this.map.on('locationerror', (e) => {
+            alert(e.message);
+        });
     }
     
     resetView() {
