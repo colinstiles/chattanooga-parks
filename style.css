@@ -40,7 +40,6 @@ body {
 }
 
 .splash-content {
-    padding: 20px;
     max-width: 100%;
     width: 100%;
 }
@@ -116,7 +115,7 @@ body {
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
-    z-index: 1000; /* Ensure it's above the map */
+    z-index: 1000;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
 }
@@ -171,31 +170,6 @@ body {
     display: block;
 }
 
-.legend {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 10px;
-    border-radius: 8px;
-    line-height: 1.5;
-}
-
-.legend i {
-    width: 18px;
-    height: 18px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.8;
-}
-
-.legend i.park {
-    background: #27ae60;
-    border: 2px solid #fff;
-    border-radius: 50%;
-}
-
-.legend i.trail {
-    background: #f39c12;
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .header h1 {
@@ -248,6 +222,7 @@ body {
     color: white;
 }
 
+/* Styling for layers control titles */
 .leaflet-control-layers h4 {
     font-size: 13px;
     font-weight: 600;
