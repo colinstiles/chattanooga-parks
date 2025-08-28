@@ -247,3 +247,17 @@ body {
     background: #f39c12;
     color: white;
 }
+
+.leaflet-control-layers h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    padding: 5px 10px;
+    background: #f4f4f4;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+}
+
+.leaflet-control-layers .leaflet-control-layers-overlays h4 {
+    border-radius: 0;
+}
