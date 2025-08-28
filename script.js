@@ -161,12 +161,13 @@ class ChattanoogaMap {
                 }
                 // Click listener for zooming to selected item
                 layer.on('click', (e) => {
-                    this.map.fitBounds(e.target.getBounds());
+                    this.map.fitBounds(e.target.getBounds(), {
+                        padding: [50, 50],
+                        duration: 1.0,
+                    });
                 });
             }
         });
-        
-        // This layer is now added to the overlayMaps object after all data is loaded
     }
     
     loadTrails(geojsonData) {
@@ -193,12 +194,13 @@ class ChattanoogaMap {
                 }
                 // Click listener for zooming to selected item
                 layer.on('click', (e) => {
-                    this.map.fitBounds(e.target.getBounds());
+                    this.map.fitBounds(e.target.getBounds(), {
+                        padding: [50, 50],
+                        duration: 1.0,
+                    });
                 });
             }
         });
-        
-        // This layer is now added to the overlayMaps object after all data is loaded
     }
 
     setInitialView() {
