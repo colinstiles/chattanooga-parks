@@ -124,24 +124,24 @@ class ChattanoogaMap {
             // Create the layers control and store it in a variable
             const layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false, position: 'topright' }).addTo(this.map);
 
-            // Get the container for the layers control
+            // Get the container for the layers control and add titles
             const container = layerControl.getContainer();
 
             // Find the base layer list and prepend the title
             const baseLayerList = container.querySelector('.leaflet-control-layers-base');
-            const basemapTitle = document.createElement('h4');
-            basemapTitle.textContent = "Basemaps";
-            basemapTitle.style.fontWeight = "bold";
-            basemapTitle.style.marginTop = "0";
-            baseLayerList.prepend(basemapTitle);
-
+            if (baseLayerList) {
+                const basemapTitle = document.createElement('h4');
+                basemapTitle.textContent = "Basemaps";
+                baseLayerList.prepend(basemapTitle);
+            }
+            
             // Find the overlays list and prepend the title
             const overlayLayerList = container.querySelector('.leaflet-control-layers-overlays');
-            const overlayTitle = document.createElement('h4');
-            overlayTitle.textContent = "Layers";
-            overlayTitle.style.fontWeight = "bold";
-            overlayTitle.style.marginBottom = "5px";
-            overlayLayerList.prepend(overlayTitle);
+            if (overlayLayerList) {
+                const overlayTitle = document.createElement('h4');
+                overlayTitle.textContent = "Layers";
+                overlayLayerList.prepend(overlayTitle);
+            }
             
             this.hideLoading();
         } catch (error) {
