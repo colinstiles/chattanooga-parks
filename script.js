@@ -5,6 +5,8 @@ class ChattanoogaMap {
         this.trailsLayer = null;
         this.baseMaps = {};
         this.overlayMaps = {};
+        this.locationMarker = null;
+        this.locationCircle = null;
 
         // Initialize map immediately when page loads
         this.init();
@@ -100,15 +102,34 @@ class ChattanoogaMap {
         });
 
         this.map.on('locationfound', (e) => {
+            // Clear previous marker and radius
+            this. clearLocationMarker();
+
             const radius = e.accuracy / 2;
-            L.marker(e.latlng).addTo(this.map)
+            this.locationMarker = L.marker(e.latlng).addTo(this.map)
                 .bindPopup("You are within " + radius + " meters of this point").openPopup();
-            L.circle(e.latlng, radius).addTo(this.map);
+            this.locationCircle = L.circle(e.latlng, radius).addTo(this.map);
         });
 
         this.map.on('locationerror', (e) => {
             alert(e.message);
         });
+
+        // Add listener to clear the marker and circle when the map is moved
+        this.map.on('movestart', () => {
+            this.clearLocationMarker();
+        });
+    }
+
+    clearLocationMarker() {
+        if (this.locationMarker) {
+            this.map.removeLayer(this.locationMarker);
+            this.locationMarker = null;
+        }
+        if (this.locationCircle) {
+            this.map.removeLayer(this.locationCircle);
+            this.locationCircle = null;
+        }
     }
     
     resetView() {
