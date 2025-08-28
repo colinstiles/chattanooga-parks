@@ -121,7 +121,27 @@ class ChattanoogaMap {
                 '<i class="trail"></i> Trails': this.trailsLayer
             };
 
-            L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false, position: 'topright' }).addTo(this.map);
+            // Create the layers control and store it in a variable
+            const layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { collapsed: false, position: 'topright' }).addTo(this.map);
+
+            // Get the container for the layers control
+            const container = layerControl.getContainer();
+
+            // Find the base layer list and prepend the title
+            const baseLayerList = container.querySelector('.leaflet-control-layers-base');
+            const basemapTitle = document.createElement('h4');
+            basemapTitle.textContent = "Basemaps";
+            basemapTitle.style.fontWeight = "bold";
+            basemapTitle.style.marginTop = "0";
+            baseLayerList.prepend(basemapTitle);
+
+            // Find the overlays list and prepend the title
+            const overlayLayerList = container.querySelector('.leaflet-control-layers-overlays');
+            const overlayTitle = document.createElement('h4');
+            overlayTitle.textContent = "Layers";
+            overlayTitle.style.fontWeight = "bold";
+            overlayTitle.style.marginBottom = "5px";
+            overlayLayerList.prepend(overlayTitle);
             
             this.hideLoading();
         } catch (error) {
@@ -143,6 +163,10 @@ class ChattanoogaMap {
             onEachFeature: (feature, layer) => {
                 const props = feature.properties;
                 if (props) {
+                    // Create hyperlinks
+                    const extLink = props['EXT_LINK'] && props['EXT_LINK'].toLowerCase() !== 'n/a' ?
+                    `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A';
+
                     const popupContent = `
                         <div class="popup-content">
                             <div class="feature-type park">PARK</div>
@@ -151,7 +175,7 @@ class ChattanoogaMap {
                             <p><strong>Amenities:</strong> ${props['AMENITIES'] || 'N/A'}</p>
                             <p><strong>Hours:</strong> ${props['HOURS'] || 'N/A'}</p>
                             <p><strong>Description:</strong> ${props['DESCRIPTION'] || 'N/A'}</p>
-                            <p><strong>External Link:</strong> ${props['EXT_LINK'] ? `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A'}</p>
+                            <p><strong>External Link:</strong> ${extLink}</p>
                             <p><strong>Acres:</strong> ${props['ACRES'] || 'N/A'}</p>
                             <p><strong>Latitude:</strong> ${props['LATITUDE'] || 'N/A'}</p>
                             <p><strong>Longitude:</strong> ${props['LONGITUDE'] || 'N/A'}</p>
@@ -180,6 +204,10 @@ class ChattanoogaMap {
             onEachFeature: (feature, layer) => {
                 const props = feature.properties;
                 if (props) {
+                    // Create hyperlinks
+                    const extLink = props['EXT_LINK'] && props['EXT_LINK'].toLowerCase() !== 'n/a' ?
+                    `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A';
+
                     const popupContent = `
                         <div class="popup-content">
                             <div class="feature-type trail">TRAIL</div>
@@ -187,7 +215,7 @@ class ChattanoogaMap {
                             <p><strong>Trail Type:</strong> ${props['TRAIL_TYPE'] || 'N/A'}</p>
                             <p><strong>Length (mi):</strong> ${props['LENGTH_MI'] || 'N/A'}</p>
                             <p><strong>ADA Accessible:</strong> ${props['ADA'] || 'N/A'}</p>
-                            <p><strong>External Link:</strong> ${props['EXT_LINK'] ? `<a href="${props['EXT_LINK']}" target="_blank">View Website</a>` : 'N/A'}</p>
+                            <p><strong>External Link:</strong> ${extLink}</p>
                         </div>
                     `;
                     layer.bindPopup(popupContent);
