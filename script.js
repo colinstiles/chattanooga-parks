@@ -71,6 +71,28 @@ class ChattanoogaMap {
         document.getElementById('resetView').addEventListener('click', () => {
             this.resetView();
         });
+
+        // Geocoding search control
+        L.Control.geocoder({
+            position: 'topleft',
+            placeholder: 'Search for an address',
+            defaultMarkGeocode: false
+        })
+        .on('markgeocode', function(e) {
+            // Clear existing markers
+            if (this.marker) {
+                this.map.removeLayer(this.marker);
+            }
+            // Add custom marker
+            this.marker = L.marker(e.geocode.center)
+                .addTo(this.map)
+                .bindPopup(e.geocode.name)
+                .openPopup();
+
+            // Pan to the location
+            this.map.panTo(e.geocode.center);
+        })
+        .addTo(this.map);
     }
     
     resetView() {
