@@ -98,7 +98,7 @@ class ChattanoogaMap {
 
         // My Location button
         document.getElementById('locateMeButton').addEventListener('click', () => {
-           this.map.locate({setView: true, maxZoom: 16}); 
+           this.map.locate({setView: true, maxZoom: 15}); 
         });
 
         this.map.on('locationfound', (e) => {
