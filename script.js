@@ -159,6 +159,10 @@ class ChattanoogaMap {
                     `;
                     layer.bindPopup(popupContent);
                 }
+                // Click listener for zooming to selected item
+                layer.on('click', (e) => {
+                    this.map.fitBounds(e.target.getBounds());
+                });
             }
         });
         
@@ -187,6 +191,10 @@ class ChattanoogaMap {
                     `;
                     layer.bindPopup(popupContent);
                 }
+                // Click listener for zooming to selected item
+                layer.on('click', (e) => {
+                    this.map.fitBounds(e.target.getBounds());
+                });
             }
         });
         
